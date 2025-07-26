@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import EmptyFeedMessage from "./EmptyFeedMessage";
 import FeedSwitcher from "./FeedSwitcher";
 import CollegeSelectionDialog from "./CollegeSelectionDialog";
 import AreaSelectionDialog from "./AreaSelectionDialog";
+import TrendingTags from "@/components/tags/TrendingTags";
 import { getGlobalFeed, getCollegeFeed, getAreaFeed, updateUserProfile } from "@/lib/api-feed";
 import WeeklyPromptBanner from "./WeeklyPrompt";
 import { useAuth } from "@/context/AuthContext";
@@ -184,6 +186,11 @@ const GlobalFeed = () => {
 		);
 	};
 
+	const handleTagClick = (tagName: string) => {
+		// Navigate to tag posts page (we'll create this next)
+		navigate(`/tags/${tagName}`);
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex h-screen items-center justify-center bg-background">
@@ -238,6 +245,15 @@ const GlobalFeed = () => {
 			</div>
 
 			<div className="max-w-2xl mx-auto px-4 py-6 pb-24 sm:pb-6">
+				{/* Trending Tags Section */}
+				<div className="mb-6">
+					<TrendingTags 
+						limit={5} 
+						onTagClick={handleTagClick}
+						className="w-full"
+					/>
+				</div>
+
 				<WeeklyPromptBanner />
 
 				{shouldShowEmptyState() ? (
