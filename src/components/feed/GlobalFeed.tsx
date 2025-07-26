@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -31,16 +30,34 @@ const GlobalFeed = () => {
 	const { isAuthenticated, user } = useAuth();
 	const navigate = useNavigate();
 
-	// Load user's college and area from localStorage on mount
+	// Load user's college and area from user profile and localStorage on mount
 	useEffect(() => {
+		// Priority: user profile > localStorage
+		const profileCollege = user?.college;
+		const profileArea = user?.area;
 		const savedCollege = localStorage.getItem("userCollege");
 		const savedArea = localStorage.getItem("userArea");
 		const savedFeedType = localStorage.getItem("feedType") as FeedType;
 		
-		if (savedCollege) setUserCollege(savedCollege);
-		if (savedArea) setUserArea(savedArea);
+		// Set college from profile first, then fallback to localStorage
+		if (profileCollege) {
+			setUserCollege(profileCollege);
+			localStorage.setItem("userCollege", profileCollege);
+		} else if (savedCollege) {
+			setUserCollege(savedCollege);
+		}
+		
+		// Set area from profile first, then fallback to localStorage
+		if (profileArea) {
+			setUserArea(profileArea);
+			localStorage.setItem("userArea", profileArea);
+		} else if (savedArea) {
+			setUserArea(savedArea);
+		}
+		
+		// Set feed type
 		if (savedFeedType) setFeedType(savedFeedType);
-	}, []);
+	}, [user]);
 
 	const getFeedData = async ({ pageParam = null }) => {
 		const filters = {
@@ -108,15 +125,18 @@ const GlobalFeed = () => {
 	};
 
 	const handleFeedTypeChange = (newFeedType: FeedType) => {
+		// If user is trying to switch to college feed and doesn't have a college set
 		if (newFeedType === "college" && !userCollege) {
 			setShowCollegeDialog(true);
 			return;
 		}
+		// If user is trying to switch to area feed and doesn't have an area set
 		if (newFeedType === "area" && !userArea) {
 			setShowAreaDialog(true);
 			return;
 		}
 		
+		// If user already has the required info, just switch the feed
 		setFeedType(newFeedType);
 		localStorage.setItem("feedType", newFeedType);
 	};
