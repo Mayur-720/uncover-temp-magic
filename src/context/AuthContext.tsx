@@ -67,32 +67,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			const data = await loginUser(email, password);
 			console.log("Login successful, received data:", data);
 
-			// Check if user has already completed onboarding in localStorage
-			const storedUser = localStorage.getItem("user");
-			let hasCompletedOnboarding = false;
-
-			if (storedUser) {
-				try {
-					const parsedStoredUser = JSON.parse(storedUser);
-					hasCompletedOnboarding = parsedStoredUser.onboardingComplete === true;
-					console.log("Stored user onboarding status:", hasCompletedOnboarding);
-				} catch (error) {
-					console.error("Error parsing stored user:", error);
-				}
-			}
-
-			// Merge the API data with existing onboarding status
-			const mergedUserData = {
+			// Store the user data with onboarding status from API response
+			const userData = {
 				...data,
-				onboardingComplete:
-					hasCompletedOnboarding || data.onboardingComplete || false,
+				onboardingComplete: data.onboardingComplete || false,
 			};
 
-			console.log("Merged user data with onboarding status:", mergedUserData);
+			console.log("Setting user data with onboarding status:", userData);
 
 			localStorage.setItem("token", data.token);
-			localStorage.setItem("user", JSON.stringify(mergedUserData));
-			setUser(mergedUserData);
+			localStorage.setItem("user", JSON.stringify(userData));
+			setUser(userData);
 
 			// Show login animation first
 			setShowLoginAnimation(true);
@@ -101,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			setTimeout(() => {
 				setShowLoginAnimation(false);
 				// Only show onboarding if user hasn't completed it
-				if (!mergedUserData.onboardingComplete) {
+				if (!userData.onboardingComplete) {
 					console.log("User hasn't completed onboarding, showing modal");
 					setTimeout(() => {
 						setShowOnboarding(true);
@@ -214,8 +199,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		// Close onboarding when user profile is updated with onboardingComplete
 		if (updatedUser.onboardingComplete) {
 			console.log("Onboarding completed, closing modal and updating state");
-			navigate("/");
 			setShowOnboarding(false);
+			navigate("/");
 		}
 	};
 

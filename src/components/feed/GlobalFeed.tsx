@@ -169,6 +169,14 @@ const GlobalFeed = () => {
 		}
 	};
 
+	const handleEditCollege = () => {
+		setShowCollegeDialog(true);
+	};
+
+	const handleEditArea = () => {
+		setShowAreaDialog(true);
+	};
+
 	const shouldShowEmptyState = () => {
 		return (
 			(feedType === "college" && !userCollege) ||
@@ -213,6 +221,10 @@ const GlobalFeed = () => {
 						<FeedSwitcher
 							currentFilter={feedType}
 							onFilterChange={handleFeedTypeChange}
+							userCollege={userCollege}
+							userArea={userArea}
+							onEditCollege={handleEditCollege}
+							onEditArea={handleEditArea}
 						/>
 					</div>
 					<Button
