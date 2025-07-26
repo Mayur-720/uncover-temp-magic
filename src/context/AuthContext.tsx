@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { loginUser, registerUser } from "@/lib/api";
 import { User } from "@/types/user";
@@ -51,6 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 					const parsedUser = JSON.parse(storedUser);
 					console.log("Loaded user from localStorage:", parsedUser);
 					setUser(parsedUser);
+					
+					// Check if user needs onboarding - only if not completed
+					if (parsedUser.onboardingComplete === false || parsedUser.onboardingComplete === undefined) {
+						console.log("User needs onboarding, will show modal");
+					} else {
+						console.log("User has completed onboarding, skipping modal");
+					}
 				} catch (error) {
 					console.error("Error parsing user from localStorage:", error);
 					setUser(null);
@@ -85,8 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			// After animation completes, check if onboarding is needed
 			setTimeout(() => {
 				setShowLoginAnimation(false);
-				// Only show onboarding if user hasn't completed it
-				if (!userData.onboardingComplete) {
+				// Only show onboarding if user hasn't completed it AND it's explicitly false
+				if (userData.onboardingComplete === false || userData.onboardingComplete === undefined) {
 					console.log("User hasn't completed onboarding, showing modal");
 					setTimeout(() => {
 						setShowOnboarding(true);
@@ -191,13 +199,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	const updateUser = (userData: User) => {
 		console.log("Updating user data in AuthContext:", userData);
 
-		// Ensure the updated user data is properly set
-		const updatedUser = { ...userData };
+		// Ensure the updated user data is properly set with onboardingComplete
+		const updatedUser = { 
+			...userData,
+			onboardingComplete: userData.onboardingComplete === true ? true : false
+		};
+		
+		console.log("Final updated user data:", updatedUser);
+		
 		setUser(updatedUser);
 		localStorage.setItem("user", JSON.stringify(updatedUser));
 
-		// Close onboarding when user profile is updated with onboardingComplete
-		if (updatedUser.onboardingComplete) {
+		// Close onboarding when user profile is updated with onboardingComplete = true
+		if (updatedUser.onboardingComplete === true) {
 			console.log("Onboarding completed, closing modal and updating state");
 			setShowOnboarding(false);
 			navigate("/");
