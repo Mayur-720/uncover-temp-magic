@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -70,7 +71,6 @@ const ReferralTierCard: React.FC<ReferralTierCardProps> = ({ tier, currentReferr
             <Progress
               value={calculateProgress()}
               className={tier.isUnlocked ? 'bg-purple-200' : ''}
-              indicatorClassName="bg-undercover-purple"
             />
           </div>
         </CardContent>

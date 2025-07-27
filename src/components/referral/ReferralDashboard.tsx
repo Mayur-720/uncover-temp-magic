@@ -94,7 +94,6 @@ const ReferralDashboard = () => {
                 <Progress
                   value={calculateProgressToNextTier()}
                   className="w-full"
-                  indicatorClassName="bg-undercover-purple"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
