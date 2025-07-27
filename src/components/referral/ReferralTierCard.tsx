@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Check, Gift } from 'lucide-react';
 import { ReferralTier } from '@/types/referral';
-import Progress  from '@/components/ui/progress';
+import { Progress } from '@/components/ui/progress';
 import ClaimRewardModal from './ClaimRewardModal';
 import { useToast } from '@/hooks/use-toast';
 
