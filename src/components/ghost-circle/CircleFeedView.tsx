@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +7,7 @@ import PostCard from "@/components/feed/PostCard";
 import { Loader, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreatePostModal from "@/components/feed/CreatePostModal";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Post } from "@/types";
 
 interface CircleFeedViewProps {
@@ -18,7 +17,6 @@ interface CircleFeedViewProps {
 const CircleFeedView: React.FC<CircleFeedViewProps> = ({ circleId }) => {
   const { user } = useAuth();
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const { toast } = useToast();
   
   const { data: posts, isLoading, error, refetch } = useQuery({
     queryKey: ['ghostCirclePosts', circleId],
@@ -122,7 +120,7 @@ const CircleFeedView: React.FC<CircleFeedViewProps> = ({ circleId }) => {
         open={isCreatePostOpen} 
         onOpenChange={setIsCreatePostOpen}
         onSuccess={handlePostCreated}
-        currentFeedType="global"
+        ghostCircleId={circleId}
       />
     </div>
   );

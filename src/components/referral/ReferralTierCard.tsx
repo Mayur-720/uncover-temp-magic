@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Check, Gift } from 'lucide-react';
 import { ReferralTier } from '@/types/referral';
-import { Progress } from '@/components/ui/progress';
+import Progress  from '@/components/ui/progress';
 import ClaimRewardModal from './ClaimRewardModal';
 import { useToast } from '@/hooks/use-toast';
 
@@ -71,6 +70,7 @@ const ReferralTierCard: React.FC<ReferralTierCardProps> = ({ tier, currentReferr
             <Progress
               value={calculateProgress()}
               className={tier.isUnlocked ? 'bg-purple-200' : ''}
+              indicatorClassName="bg-undercover-purple"
             />
           </div>
         </CardContent>
