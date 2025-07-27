@@ -1,44 +1,57 @@
 
-import { api } from "./api";
-import { Post } from "@/types/user";
+import axios from "axios";
 
-export interface FeedFilters {
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+export const getGlobalFeed = async (filters: {
   limit?: number;
   after?: string | null;
+}) => {
+  const response = await axios.get(`${API_BASE_URL}/api/posts/feed`, {
+    params: filters,
+  });
+  return response.data;
+};
+
+export const getCollegeFeed = async (filters: {
+  limit?: number;
+  after?: string | null;
+  college: string;
+}) => {
+  const response = await axios.get(`${API_BASE_URL}/api/posts/feed/college`, {
+    params: filters,
+  });
+  return response.data;
+};
+
+export const getAreaFeed = async (filters: {
+  limit?: number;
+  after?: string | null;
+  area: string;
+}) => {
+  const response = await axios.get(`${API_BASE_URL}/api/posts/feed/area`, {
+    params: filters,
+  });
+  return response.data;
+};
+
+export const updateUserProfile = async (profileData: {
   college?: string;
   area?: string;
-}
-
-export const getGlobalFeed = async (filters: FeedFilters): Promise<{ posts: Post[]; hasMore: boolean }> => {
-  const params = [];
-  if (filters.limit) params.push(`limit=${filters.limit}`);
-  if (filters.after) params.push(`after=${filters.after}`);
-  const query = params.length ? `?${params.join('&')}` : '';
-  const response = await api.get(`/api/posts/global${query}`);
+}) => {
+  const response = await axios.put(`${API_BASE_URL}/api/users/profile`, profileData);
   return response.data;
 };
 
-export const getCollegeFeed = async (filters: FeedFilters): Promise<{ posts: Post[]; hasMore: boolean }> => {
-  const params = [];
-  if (filters.limit) params.push(`limit=${filters.limit}`);
-  if (filters.after) params.push(`after=${filters.after}`);
-  if (filters.college) params.push(`college=${encodeURIComponent(filters.college)}`);
-  const query = params.length ? `?${params.join('&')}` : '';
-  const response = await api.get(`/api/posts/college${query}`);
-  return response.data;
-};
-
-export const getAreaFeed = async (filters: FeedFilters): Promise<{ posts: Post[]; hasMore: boolean }> => {
-  const params = [];
-  if (filters.limit) params.push(`limit=${filters.limit}`);
-  if (filters.after) params.push(`after=${filters.after}`);
-  if (filters.area) params.push(`area=${encodeURIComponent(filters.area)}`);
-  const query = params.length ? `?${params.join('&')}` : '';
-  const response = await api.get(`/api/posts/area${query}`);
-  return response.data;
-};
-
-export const updateUserProfile = async (updates: { college?: string; area?: string }) => {
-  const response = await api.put('/api/users/profile', updates);
+export const createPost = async (postData: {
+  content: string;
+  images?: string[];
+  videos?: Array<{ url: string; thumbnail?: string; duration?: number }>;
+  feedType?: "global" | "college" | "area";
+  college?: string;
+  area?: string;
+  tags?: string[];
+}) => {
+  const response = await axios.post(`${API_BASE_URL}/api/posts`, postData);
   return response.data;
 };
