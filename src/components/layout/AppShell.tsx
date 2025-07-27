@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -37,9 +38,9 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
 
   const navigationItems = [
     { icon: Home, label: "Feed", path: "/" },
-    { icon: Hash, label: "Tags", path: "/tags" }, // Add tags navigation
+    { icon: Hash, label: "Tags", path: "/tags" },
     { icon: Book, label: "Confessions", path: "/confessions" },
-    { icon: User, label: "Profile", path: `/profile/${user?.uid}` },
+    { icon: User, label: "Profile", path: `/profile/${user?._id}` },
   ];
 
   return (

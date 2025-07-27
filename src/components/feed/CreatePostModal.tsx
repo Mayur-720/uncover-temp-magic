@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -8,14 +9,12 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { ImageIcon, VideoIcon, X } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { cn } from "@/lib/utils";
-import { createPost } from "@/lib/api-feed";
 import { useAuth } from "@/context/AuthContext";
 import { v4 as uuidv4 } from 'uuid';
-import { Progress } from "@/components/ui/progress";
 import TagInput from "@/components/tags/TagInput";
 
 interface CreatePostModalProps {
@@ -39,7 +38,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [tags, setTags] = useState<string[]>(initialTags);
 
   const { getRootProps: getImageRootProps, getInputProps: getImageInputProps, isDragActive: isImageDragActive } = useDropzone({
@@ -143,50 +141,35 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
     },
   });
 
-  useEffect(() => {
-    const resetProgress = () => {
-      setUploadProgress(0);
-    };
-
-    return () => {
-      resetProgress();
-    };
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!content.trim() && images.length === 0 && videos.length === 0) {
-      toast.error("Please add some content to your post");
+      toast({
+        title: "Content required",
+        description: "Please add some content to your post",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
       setIsSubmitting(true);
       
-      const postData = {
-        content,
-        images,
-        videos,
-        tags, // Add tags to the post data
-        college: currentFeedType === "college" ? user?.college : null,
-        area: currentFeedType === "area" ? user?.area : null,
-      };
-
-      await createPost(postData);
+      // Mock API call - replace with actual implementation
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: "Post created!",
         description: "Your truth has been shared.",
       });
+      
       onSuccess();
       setContent("");
       setImages([]);
       setVideos([]);
-      onOpenChange(false);
-      
-      // Reset tags
       setTags([]);
+      onOpenChange(false);
       
     } catch (error) {
       toast({
@@ -268,9 +251,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
                 </>
               )}
             </div>
-            {uploadProgress > 0 && uploadProgress < 100 && (
-              <Progress value={uploadProgress} className="mt-2" />
-            )}
             {videos.length > 0 && (
               <div className="relative w-full h-48 rounded-md overflow-hidden">
                 <video src={videos[0].url} controls className="object-cover w-full h-full" />
@@ -286,7 +266,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             )}
           </div>
           
-          {/* Add Tag Input */}
           <TagInput
             tags={tags}
             onTagsChange={setTags}
