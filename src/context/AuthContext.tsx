@@ -87,28 +87,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			localStorage.setItem("user", JSON.stringify(userData));
 			setUser(userData);
 
-			// Show login animation first
-			setShowLoginAnimation(true);
-
-			// After animation completes, check if onboarding is needed
-			setTimeout(() => {
-				setShowLoginAnimation(false);
-				// Only show onboarding if user hasn't completed it AND it's explicitly false
-				if (userData.onboardingComplete === false || userData.onboardingComplete === undefined) {
-					console.log("User hasn't completed onboarding, showing modal");
-					setTimeout(() => {
-						setShowOnboarding(true);
-					}, 300);
-				} else {
-					console.log("User has completed onboarding, skipping modal");
-					navigate("/");
-				}
-			}, 3000); // Animation duration
-
 			toast({
 				title: "Welcome back!",
 				description: "You have successfully logged in.",
 			});
+
+			// Navigate immediately to home page
+			navigate("/");
+
 		} catch (error: any) {
 			console.error("Login error:", error);
 			toast({
@@ -152,22 +138,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			localStorage.setItem("user", JSON.stringify(newUserData));
 			setUser(newUserData);
 
-			// Show login animation first
-			setShowLoginAnimation(true);
-
-			// Always show onboarding for new users after animation completes
-			setTimeout(() => {
-				setShowLoginAnimation(false);
-				setTimeout(() => {
-					console.log("Showing onboarding modal for new user...");
-					setShowOnboarding(true);
-				}, 300);
-			}, 3000); // Animation duration
-
 			toast({
 				title: "Account created!",
 				description: "Welcome to UnderKover! Let's get you set up.",
 			});
+
+			// Navigate to home page and show onboarding
+			navigate("/");
+			setTimeout(() => {
+				setShowOnboarding(true);
+			}, 500);
+
 		} catch (error: any) {
 			console.error("Registration failed:", error);
 			toast({
@@ -190,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		setUser(null);
 		setShowOnboarding(false);
 		setShowLoginAnimation(false);
+		navigate("/login");
 		toast({
 			title: "Logged out",
 			description: "You have been successfully logged out.",
