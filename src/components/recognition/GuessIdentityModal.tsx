@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from "react";
@@ -39,7 +38,7 @@ const GuessIdentityModal = ({
 
     setIsSubmitting(true);
     try {
-      const result = await recognizeUser(targetUser._id);
+      const result = await recognizeUser(targetUser._id, guessedIdentity);
       
       if (result.success) {
         toast({

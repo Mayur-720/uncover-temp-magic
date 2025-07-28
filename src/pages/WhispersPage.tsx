@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getMyWhispers, joinWhisperMatch, deleteConversation } from "@/lib/api";
@@ -98,7 +97,7 @@ const WhispersPage = () => {
   });
 
   const filteredConversations = React.useMemo(() => {
-    if (!conversations || !Array.isArray(conversations)) return [];
+    if (!conversations) return [];
     if (!searchTerm.trim()) return conversations;
     return conversations.filter(convo => 
       convo.partner.anonymousAlias.toLowerCase().includes(searchTerm.toLowerCase()) ||

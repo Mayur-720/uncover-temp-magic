@@ -54,10 +54,7 @@ const CreateGhostCircleModal: React.FC<CreateGhostCircleModalProps> = ({
   const onSubmit = async (values: z.infer<typeof circleSchema>) => {
     setIsSubmitting(true);
     try {
-      await createGhostCircle({
-        name: values.name,
-        description: values.description || ""
-      });
+      await createGhostCircle(values.name, values.description || "");
       
       toast({
         title: "Ghost Circle created",

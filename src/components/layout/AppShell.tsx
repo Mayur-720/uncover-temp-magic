@@ -1,208 +1,481 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import "../../../public/lovable-uploads/UnderKover_logo2.png";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  Home,
-  Menu,
-  MessageCircle,
-  Users,
-  Heart,
-  Trophy,
-  Gift,
-  Hash
+	Home,
+	MessageSquare,
+	UserRound,
+	Users,
+	Menu,
+	X,
+	PlusCircle,
+	LogOut,
+	LogIn,
 } from "lucide-react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import WhisperModal from "../whisper/WhisperModal";
 import { useAuth } from "@/context/AuthContext";
-import { cn } from "@/lib/utils";
-import CollegeSelector from "@/components/CollegeSelector";
-import AreaSelector from "@/components/AreaSelector";
-import { useToast } from "@/hooks/use-toast";
+import AvatarGenerator from "../user/AvatarGenerator";
+import { useLocation, useNavigate } from "react-router-dom";
+import Footer from "./Footer";
 
-const AppShell = () => {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { user, logout } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+const NavItem: React.FC<{
+	icon: React.ReactNode;
+	label: string;
+	active?: boolean;
+	onClick?: () => void;
+	disabled?: boolean;
+}> = ({ icon, label, active = false, onClick, disabled = false }) => {
+	return (
+		<Button
+			variant={active ? "secondary" : "ghost"}
+			className={`justify-start w-full ${
+				active ? "bg-purple-600/20 text-purple-500" : "text-muted-foreground"
+			} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+			onClick={disabled ? undefined : onClick}
+			disabled={disabled}
+		>
+			{icon}
+			<span className="ml-2">{label}</span>
+		</Button>
+	);
+};
 
-  const navItems = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Ghost Circles", href: "/ghost-circles", icon: Users },
-    { name: "Tags", href: "/tags", icon: Hash },
-    { name: "Whispers", href: "/whispers", icon: MessageCircle },
-    { name: "Matches", href: "/matches", icon: Heart },
-    { name: "Recognitions", href: "/recognitions", icon: Trophy },
-    { name: "Referrals", href: "/referrals", icon: Gift },
-  ];
+interface AppShellProps {
+	children: React.ReactNode;
+}
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login");
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
-    } catch (error) {
-      console.error("Logout failed:", error);
-      toast({
-        title: "Error",
-        description: "Failed to logout. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+const AppShell = ({ children }: AppShellProps) => {
+	const navigate = useNavigate();
+	const location = useLocation();
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [currentTab, setCurrentTab] = useState("Home");
+	const [whisperModalOpen, setWhisperModalOpen] = useState(false);
+	const { user, logout, isAuthenticated } = useAuth();
 
-  return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border hidden sm:flex flex-col py-4">
-        <div className="px-6 py-2 flex items-center justify-between">
-          <Link to="/" className="font-bold text-lg text-foreground">
-            Underkover
-          </Link>
-        </div>
+	useEffect(() => {
+		if (location.pathname === "/") setCurrentTab("Home");
+		else if (location.pathname === "/whispers") setCurrentTab("Whispers");
+		else if (location.pathname === "/ghost-circles") setCurrentTab("Circles");
+		else if (location.pathname === "/profile") setCurrentTab("Profile");
+		else if (location.pathname === "/referrals") setCurrentTab("Referrals");
+		setMobileMenuOpen(false);
+	}, [location.pathname]);
 
-        <nav className="flex-1 px-6 py-4">
-          <ul>
-            {navItems.map((item) => (
-              <li key={item.name} className="mb-2">
-                <Link
-                  to={item.href}
-                  className={cn(
-                    "flex items-center px-4 py-2 rounded-md hover:bg-secondary transition-colors",
-                    location.pathname === item.href
-                      ? "bg-secondary font-medium"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  <item.icon className="w-4 h-4 mr-2" />
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+	const handleNavigation = (path: string, requiresAuth: boolean = false) => {
+		if (requiresAuth && !isAuthenticated) {
+			navigate("/login");
+			return;
+		}
+		navigate(path);
+		setMobileMenuOpen(false);
+	};
 
-        <div className="border-t border-border p-4">
-          <div className="flex items-center space-x-3 mb-3">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback>{user?.avatarEmoji || "🎭"}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium text-sm text-foreground">
-                {user?.anonymousAlias || "Anonymous"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {user?.email || "No Email"}
-              </p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" className="w-full" onClick={handleLogout}>
-            Logout
-          </Button>
-        </div>
-      </aside>
+	const openWhisperModal = () => {
+		if (!isAuthenticated) {
+			navigate("/login");
+			return;
+		}
+		setWhisperModalOpen(true);
+		setMobileMenuOpen(false);
+	};
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col bg-background">
-        {/* Header */}
-        <header className="flex items-center justify-between p-4 border-b border-border sm:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setIsSheetOpen(true)}>
-            <Menu className="h-5 w-5" />
-          </Button>
-          <Link to="/" className="font-bold text-lg text-foreground">
-            Underkover
-          </Link>
-          <div></div>
-        </header>
+	const userIdentity = useMemo(
+		() => ({
+			emoji: user?.avatarEmoji || "🎭",
+			nickname: user?.anonymousAlias || "Anonymous User",
+			color: "#6E59A5",
+		}),
+		[user]
+	);
 
-        {/* Content Area */}
-        <div className="flex-1 p-4">
-          <Outlet />
-        </div>
-      </main>
+	const handleLogout = () => {
+		logout();
+		navigate("/");
+	};
 
-      {/* Mobile Bottom Navigation */}
-      <div className="sm:hidden fixed bottom-0 left-0 w-full bg-background border-t border-border z-50">
-        <nav className="flex items-center justify-around p-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground"
-            >
-              <item.icon className="w-5 h-5 mb-1" />
-              <span className="text-xs">{item.name}</span>
-            </Link>
-          ))}
-        </nav>
-      </div>
+	useEffect(() => {
+		if (mobileMenuOpen) {
+			document.body.classList.add("overflow-hidden");
+		} else {
+			document.body.classList.remove("overflow-hidden");
+		}
+		return () => {
+			document.body.classList.remove("overflow-hidden");
+		};
+	}, [mobileMenuOpen]);
 
-      {/* Mobile Navigation Sheet */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-64">
-          <SheetHeader>
-            <SheetTitle>Menu</SheetTitle>
-            <SheetDescription>
-              Explore Underkover
-            </SheetDescription>
-          </SheetHeader>
-          <nav className="flex-1 px-6 py-4">
-            <ul>
-              {navItems.map((item) => (
-                <li key={item.name} className="mb-2">
-                  <Link
-                    to={item.href}
-                    className={cn(
-                      "flex items-center px-4 py-2 rounded-md hover:bg-secondary transition-colors",
-                      location.pathname === item.href
-                        ? "bg-secondary font-medium"
-                        : "text-muted-foreground"
-                    )}
-                    onClick={() => setIsSheetOpen(false)}
-                  >
-                    <item.icon className="w-4 h-4 mr-2" />
-                    <span>{item.name}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+	useEffect(() => {
+		document.body.classList.remove("overflow-hidden");
+		return () => {
+			document.body.classList.remove("overflow-hidden");
+		};
+	}, [location.pathname]);
 
-          <div className="border-t border-border p-4">
-            <div className="flex items-center space-x-3 mb-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback>{user?.avatarEmoji || "🎭"}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium text-sm text-foreground">
-                  {user?.anonymousAlias || "Anonymous"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {user?.email || "No Email"}
-                </p>
-              </div>
-            </div>
-            <CollegeSelector />
-            <AreaSelector />
-            <Button variant="outline" size="sm" className="w-full" onClick={handleLogout}>
-              Logout
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </div>
-  );
+	return (
+		<div className="min-h-screen bg-background flex">
+			{/* Desktop Sidebar */}
+			<div className="hidden md:flex flex-col w-64 border-r border-border bg-card h-screen sticky top-0">
+				<div className="p-4 border-b border-border">
+					<h1
+						className="text-xl font-bold text-purple-500 flex items-center hover:cursor-pointer"
+						onClick={() => navigate("/")}
+					>
+						<img
+							src="/lovable-uploads/UnderKover_logo2.png"
+							alt="UnderKover"
+							className="w-8 h-8 mr-2"
+						/>
+						UnderKover
+					</h1>
+				</div>
+
+				<div className="p-4 flex-1">
+					{isAuthenticated ? (
+						<div
+							onClick={() => handleNavigation("/profile", true)}
+							className="flex items-center gap-3 bg-gray-800 rounded-lg p-3 mb-6 border border-purple-500/20 hover:cursor-pointer"
+						>
+							<AvatarGenerator
+								emoji={userIdentity.emoji}
+								nickname={user?.anonymousAlias}
+								color={userIdentity.color}
+								size="md"
+							/>
+							<div>
+								<h2 className="text-lg font-bold">{user?.anonymousAlias}</h2>
+								<p className="text-xs text-muted-foreground">
+									Your anonymous identity
+								</p>
+							</div>
+						</div>
+					) : (
+						<div className="flex items-center gap-3 bg-background rounded-lg p-3 mb-6 border border-purple-500/20">
+							<AvatarGenerator
+								emoji={userIdentity.emoji}
+								nickname={userIdentity.nickname}
+								color={userIdentity.color}
+								size="md"
+							/>
+							<div>
+								<h2 className="text-lg font-bold">{userIdentity.nickname}</h2>
+								<p className="text-xs text-muted-foreground">
+									<button
+										onClick={() => navigate("/login")}
+										className="text-purple-500 hover:text-purple-400"
+									>
+										Log in to personalize
+									</button>
+								</p>
+							</div>
+						</div>
+					)}
+
+					<div className="space-y-1">
+						<NavItem
+							icon={<Home size={18} />}
+							label="Home"
+							active={currentTab === "Home"}
+							onClick={() => handleNavigation("/")}
+						/>
+						<NavItem
+							icon={<Users size={18} />}
+							label="Ghost Circles"
+							active={currentTab === "Circles"}
+							onClick={() => handleNavigation("/ghost-circles", true)}
+							disabled={!isAuthenticated}
+						/>
+						<NavItem
+							icon={<MessageSquare size={18} />}
+							label="Whispers"
+							active={currentTab === "Whispers"}
+							onClick={() => handleNavigation("/whispers", true)}
+							disabled={!isAuthenticated}
+						/>
+						<NavItem
+							icon={<UserRound size={18} />}
+							label="Profile"
+							active={currentTab === "Profile"}
+							onClick={() => handleNavigation("/profile", true)}
+							disabled={!isAuthenticated}
+						/>
+					</div>
+
+					<button
+						onClick={openWhisperModal}
+						className="flex items-center justify-center p-2 rounded-lg mt-6 w-full border border-purple-600 hover:bg-purple-700 text-white"
+					>
+						<MessageSquare size={16} className="mr-2" /> New Whisper
+					</button>
+				</div>
+
+				<div className="p-4">
+					{isAuthenticated ? (
+						<Button
+							onClick={handleLogout}
+							className="w-full bg-red-500 hover:bg-red-700 text-white"
+						>
+							<LogOut size={16} className="mr-2" />
+							Log Out
+						</Button>
+					) : (
+						<Button
+							onClick={() => navigate("/login")}
+							className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+						>
+							<LogIn size={16} className="mr-2" />
+							Log In
+						</Button>
+					)}
+				</div>
+			</div>
+
+			{/* Mobile Menu */}
+			{mobileMenuOpen && (
+				<>
+					<div
+						className="fixed inset-0 bg-black/80 z-40 md:hidden transition-opacity duration-300"
+						aria-hidden="true"
+						style={{ pointerEvents: "auto" }}
+						onClick={() => setMobileMenuOpen(false)}
+					></div>
+					<div
+						className="fixed left-0 right-0 bottom-0 z-50 flex md:hidden flex-col animate-slide-up transition-all duration-300 bg-card"
+						style={{
+							height: "90vh",
+							maxHeight: "90vh",
+						}}
+					>
+						<div className="p-4 flex justify-between items-center border-b border-border">
+							<h1 className="text-xl font-bold text-purple-500 flex items-center">
+								<img
+									src="/lovable-uploads/UnderKover_logo2.png"
+									alt="UnderKover"
+									className="w-8 h-8 mr-2"
+								/>
+								UnderKover
+							</h1>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => setMobileMenuOpen(false)}
+							>
+								<X />
+							</Button>
+						</div>
+						<div className="p-4 flex-1 overflow-y-auto">
+							{isAuthenticated ? (
+								<div
+									onClick={() => handleNavigation("/profile", true)}
+									className="flex items-center gap-3 bg-background rounded-lg p-3 mb-6 border border-purple-500/20 hover:cursor-pointer"
+								>
+									<AvatarGenerator
+										emoji={userIdentity.emoji}
+										nickname={user?.anonymousAlias}
+										color={userIdentity.color}
+										size="md"
+									/>
+									<div>
+										<h2 className="text-lg font-bold">
+											{user?.anonymousAlias}
+										</h2>
+										<p className="text-xs text-muted-foreground">
+											Your anonymous identity
+										</p>
+									</div>
+								</div>
+							) : (
+								<div className="flex items-center gap-3 bg-background rounded-lg p-3 mb-6 border border-purple-500/20">
+									<AvatarGenerator
+										emoji={userIdentity.emoji}
+										nickname={userIdentity.nickname}
+										color={userIdentity.color}
+										size="md"
+									/>
+									<div>
+										<h2 className="text-lg font-bold">
+											{userIdentity.nickname}
+										</h2>
+										<p className="text-xs text-muted-foreground">
+											<button
+												onClick={() => navigate("/login")}
+												className="text-purple-500 hover:text-purple-400"
+											>
+												Log in to personalize
+											</button>
+										</p>
+									</div>
+								</div>
+							)}
+							<div className="space-y-2">
+								<NavItem
+									icon={<Home size={18} />}
+									label="Home"
+									active={currentTab === "Home"}
+									onClick={() => handleNavigation("/")}
+								/>
+								<NavItem
+									icon={<Users size={18} />}
+									label="Ghost Circles"
+									active={currentTab === "Circles"}
+									onClick={() => handleNavigation("/ghost-circles", true)}
+									disabled={!isAuthenticated}
+								/>
+								<NavItem
+									icon={<MessageSquare size={18} />}
+									label="Whispers"
+									active={currentTab === "Whispers"}
+									onClick={() => handleNavigation("/whispers", true)}
+									disabled={!isAuthenticated}
+								/>
+								<NavItem
+									icon={<UserRound size={18} />}
+									label="Profile"
+									active={currentTab === "Profile"}
+									onClick={() => handleNavigation("/profile", true)}
+									disabled={!isAuthenticated}
+								/>
+							</div>
+							<Button
+								onClick={openWhisperModal}
+								className="flex items-center justify-center p-2 rounded-lg mt-6 w-full border border-purple-600 hover:bg-purple-700 text-white"
+							>
+								<MessageSquare size={16} className="mr-2" /> New Whisper
+							</Button>
+						</div>
+						<div className="p-4 border-t border-border">
+							{isAuthenticated ? (
+								<Button
+									onClick={handleLogout}
+									className="w-full bg-red-500 hover:bg-red-700 text-white"
+								>
+									<LogOut size={16} className="mr-2" />
+									Log Out
+								</Button>
+							) : (
+								<Button
+									onClick={() => navigate("/login")}
+									className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+								>
+									<LogIn size={16} className="mr-2" />
+									Log In
+								</Button>
+							)}
+						</div>
+					</div>
+				</>
+			)}
+
+			{/* Main Content */}
+			<div className="flex-1 flex flex-col h-screen min-h-0">
+				{/* Mobile Top Bar */}
+				<div className="md:hidden sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border p-4 flex justify-between items-center">
+					<h1
+						className="text-lg font-bold text-purple-500 flex items-center"
+						onClick={() => navigate("/")}
+					>
+						<img
+							src="/lovable-uploads/UnderKover_logo2.png"
+							alt="UnderKover"
+							className="w-6 h-6 mr-2"
+						/>
+						UnderKover
+					</h1>
+					<div className="flex items-center space-x-2">
+						<Button
+							variant="ghost"
+							size="icon"
+							className="text-purple-500"
+							onClick={openWhisperModal}
+						>
+							<MessageSquare size={20} />
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setMobileMenuOpen(true)}
+						>
+							<Menu size={20} />
+						</Button>
+					</div>
+				</div>
+
+				{/* Children (Page Content) */}
+				<div className="flex-1 min-h-0 overflow-y-auto pb-20 md:pb-0 flex flex-col">
+					<div className="flex-1">{children}</div>
+					<Footer />
+				</div>
+
+				{/* Bottom Navigation (Mobile) */}
+				<div className="md:hidden fixed bottom-0 w-full bg-card border-t border-border p-2 flex justify-around z-50">
+					<Button
+						variant="ghost"
+						size="icon"
+						className={
+							currentTab === "Home"
+								? "text-purple-500"
+								: "text-muted-foreground"
+						}
+						onClick={() => handleNavigation("/")}
+					>
+						<Home size={20} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className={
+							currentTab === "Circles"
+								? "text-purple-500"
+								: "text-muted-foreground"
+						}
+						onClick={() => handleNavigation("/ghost-circles", true)}
+						disabled={!isAuthenticated}
+					>
+						<Users size={20} />
+					</Button>
+					<Button
+						variant="secondary"
+						size="icon"
+						className="rounded-full bg-purple-600 text-white"
+						onClick={openWhisperModal}
+					>
+						<PlusCircle size={20} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className={
+							currentTab === "Whispers"
+								? "text-purple-500"
+								: "text-muted-foreground"
+						}
+						onClick={() => handleNavigation("/whispers", true)}
+						disabled={!isAuthenticated}
+					>
+						<MessageSquare size={20} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className={
+							currentTab === "Profile"
+								? "text-purple-500"
+								: "text-muted-foreground"
+						}
+						onClick={() => handleNavigation("/profile", true)}
+						disabled={!isAuthenticated}
+					>
+						<UserRound size={20} />
+					</Button>
+				</div>
+			</div>
+
+			{/* Whisper Modal */}
+			<WhisperModal
+				open={whisperModalOpen}
+				onOpenChange={setWhisperModalOpen}
+			/>
+		</div>
+	);
 };
 
 export default AppShell;

@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,7 +38,6 @@ const Login: React.FC = () => {
 	const { login, isLoading } = useAuth();
 	const [showPassword, setShowPassword] = React.useState(false);
 	const [showForgotPassword, setShowForgotPassword] = React.useState(false);
-	const navigate = useNavigate();
 
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
@@ -50,12 +48,7 @@ const Login: React.FC = () => {
 	});
 
 	const onSubmit = async (data: LoginFormValues) => {
-		try {
-			await login(data.email, data.password);
-			// Navigation is handled in the AuthContext login function
-		} catch (error) {
-			console.error("Login failed:", error);
-		}
+		await login(data.email, data.password);
 	};
 
 	return (
@@ -155,7 +148,7 @@ const Login: React.FC = () => {
 								className="w-full bg-purple-600 hover:bg-purple-700 py-6 text-lg font-medium mt-4"
 								disabled={isLoading}
 							>
-								{isLoading ? "Entering..." : "Enter UnderKover"}
+								{isLoading ? "Entering the shadows..." : "Enter UnderKover"}
 							</Button>
 						</form>
 					</Form>

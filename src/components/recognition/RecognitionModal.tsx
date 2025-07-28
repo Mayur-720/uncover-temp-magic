@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState, useEffect } from "react";
@@ -45,8 +44,8 @@ const RecognitionModal = ({ open, onOpenChange }: RecognitionModalProps) => {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["recognitions"],
-    queryFn: () => getRecognitions(),
+    queryKey: ["recognitions", activeTab, filter],
+    queryFn: () => getRecognitions(activeTab, filter),
     enabled: open,
   });
 

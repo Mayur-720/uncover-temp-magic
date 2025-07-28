@@ -60,7 +60,7 @@ const InviteToCircleModal: React.FC<InviteToCircleModalProps> = ({
   const onSubmit = async (values: z.infer<typeof inviteSchema>) => {
     setIsSubmitting(true);
     try {
-      await inviteToGhostCircle(circleId, [values.username]);
+      await inviteToGhostCircle(circleId, values.username);
       
       toast({
         title: "Invitation sent",
@@ -164,10 +164,7 @@ const InviteToCircleModal: React.FC<InviteToCircleModalProps> = ({
               
               <div className="grid grid-cols-3 gap-2">
                 <Button 
-                  onClick={() => {
-                    const message = `Join my Ghost Circle "${circleName}" on UnderCover: ${inviteLink}`;
-                    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
-                  }}
+                  onClick={shareViaWhatsApp}
                   variant="outline" 
                   className="flex flex-col items-center gap-2 h-auto py-4"
                 >
@@ -178,10 +175,7 @@ const InviteToCircleModal: React.FC<InviteToCircleModalProps> = ({
                 </Button>
                 
                 <Button 
-                  onClick={() => {
-                    const message = `Join my Ghost Circle "${circleName}" on UnderCover: ${inviteLink}`;
-                    window.open(`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(`Join my Ghost Circle "${circleName}" on UnderCover`)}`, "_blank");
-                  }}
+                  onClick={shareViaTelegram}
                   variant="outline" 
                   className="flex flex-col items-center gap-2 h-auto py-4"
                 >
@@ -192,13 +186,7 @@ const InviteToCircleModal: React.FC<InviteToCircleModalProps> = ({
                 </Button>
                 
                 <Button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(`Join my Ghost Circle "${circleName}" on UnderCover: ${inviteLink}`);
-                    toast({
-                      title: "Link copied",
-                      description: "Share this link on Instagram to invite friends",
-                    });
-                  }}
+                  onClick={shareViaInstagram}
                   variant="outline" 
                   className="flex flex-col items-center gap-2 h-auto py-4"
                 >
