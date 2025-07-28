@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Sheet,
@@ -95,7 +96,6 @@ const AppShell = () => {
         <div className="border-t border-border p-4">
           <div className="flex items-center space-x-3 mb-3">
             <Avatar className="w-8 h-8">
-              <AvatarImage src={user?.avatarUrl || ""} />
               <AvatarFallback>{user?.avatarEmoji || "🎭"}</AvatarFallback>
             </Avatar>
             <div>
@@ -182,7 +182,6 @@ const AppShell = () => {
           <div className="border-t border-border p-4">
             <div className="flex items-center space-x-3 mb-3">
               <Avatar className="w-8 h-8">
-                <AvatarImage src={user?.avatarUrl || ""} />
                 <AvatarFallback>{user?.avatarEmoji || "🎭"}</AvatarFallback>
               </Avatar>
               <div>

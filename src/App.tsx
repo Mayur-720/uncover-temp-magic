@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -5,8 +6,8 @@ import { QueryClient } from "@/context/QueryContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AdminProvider } from "@/context/AdminContext";
 import { SmoothScrollProvider } from "@/context/SmoothScrollContext";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import ProtectedAdminRoute from "@/components/auth/ProtectedAdminRoute";
 import AppShell from "@/components/layout/AppShell";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -26,7 +27,6 @@ import AdminPanel from "@/pages/AdminPanel";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminMatchStats from "@/pages/AdminMatchStats";
 import InvitePage from "@/pages/InvitePage";
-
 import TagsPage from "./pages/TagsPage";
 
 function App() {
