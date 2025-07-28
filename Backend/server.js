@@ -1,3 +1,4 @@
+
 // server.js
 require("dotenv").config({ path: "./.env" });
 const express = require("express");
@@ -23,6 +24,7 @@ const whisperMatchRoutes = require("./routes/whisperMatchRoutes");
 const amaRoutes = require("./routes/amaRoutes");
 const matchRoutes = require("./routes/matchRoutes");
 const adminMatchRoutes = require("./routes/adminMatchRoutes");
+const tagRoutes = require("./routes/tagRoutes");
 
 const app = express();
 const server = http.createServer(app);
@@ -137,6 +139,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/prompts", promptEventRoutes);
 app.use("/api/whisper-match", whisperMatchRoutes);
 app.use("/api/ama", amaRoutes);
+app.use("/api/tags", tagRoutes);
 
 // ----- NEW ROUTES FOR MATCH FEATURES AND ADMIN -----
 app.use("/api/match", matchRoutes);

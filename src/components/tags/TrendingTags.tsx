@@ -19,16 +19,20 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
 }) => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTrendingTags = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         const response = await getTrendingTags({ limit });
         setTags(response.tags);
       } catch (error) {
         console.error("Error fetching trending tags:", error);
+        setError("Failed to load trending tags");
+        setTags([]);
       } finally {
         setIsLoading(false);
       }
@@ -77,8 +81,22 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
     );
   }
 
+  if (error) {
+    return (
+      <div className={cn("flex items-center space-x-2 text-red-400", className)}>
+        <TrendingUp className="h-4 w-4" />
+        <span className="text-sm">{error}</span>
+      </div>
+    );
+  }
+
   if (tags.length === 0) {
-    return null;
+    return (
+      <div className={cn("flex items-center space-x-2 text-gray-400", className)}>
+        <TrendingUp className="h-4 w-4" />
+        <span className="text-sm">No trending tags found</span>
+      </div>
+    );
   }
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,48 +23,55 @@ const TagSuggestion: React.FC<TagSuggestionProps> = ({
 	const [suggestedTags, setSuggestedTags] = useState<Tag[]>([]);
 	const [customTagInput, setCustomTagInput] = useState("");
 	const [isAddingCustomTag, setIsAddingCustomTag] = useState(false);
+	const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
 	useEffect(() => {
 		if (content.trim()) {
 			generateTagSuggestions(content);
+		} else {
+			setSuggestedTags([]);
 		}
 	}, [content]);
 
 	const generateTagSuggestions = async (text: string) => {
 		try {
+			setIsLoadingSuggestions(true);
 			// Extract potential hashtags from content
 			const hashtags = extractHashtags(text);
-
 			// Extract keywords for suggestions
 			const keywords = extractKeywords(text);
 
 			// Search for existing tags based on keywords
 			const suggestions = new Set<Tag>();
 
+			// Add hashtag-based suggestions first
+			for (const hashtag of hashtags) {
+				try {
+					const response = await searchTags(hashtag);
+					response.tags.forEach((tag) => suggestions.add(tag));
+				} catch (error) {
+					console.error("Error searching hashtag:", hashtag, error);
+				}
+			}
+
+			// Add keyword-based suggestions
 			for (const keyword of keywords) {
 				if (keyword.length >= 2) {
 					try {
 						const response = await searchTags(keyword);
 						response.tags.forEach((tag) => suggestions.add(tag));
 					} catch (error) {
-						// Continue with other keywords if one fails
+						console.error("Error searching keyword:", keyword, error);
 					}
-				}
-			}
-
-			// Add hashtag-based suggestions
-			for (const hashtag of hashtags) {
-				try {
-					const response = await searchTags(hashtag);
-					response.tags.forEach((tag) => suggestions.add(tag));
-				} catch (error) {
-					// Continue with other hashtags if one fails
 				}
 			}
 
 			setSuggestedTags(Array.from(suggestions).slice(0, 10));
 		} catch (error) {
 			console.error("Error generating tag suggestions:", error);
+			setSuggestedTags([]);
+		} finally {
+			setIsLoadingSuggestions(false);
 		}
 	};
 
@@ -77,64 +85,11 @@ const TagSuggestion: React.FC<TagSuggestionProps> = ({
 		// Remove hashtags and common words
 		const cleanText = text.replace(/#[\w]+/g, "").toLowerCase();
 		const commonWords = [
-			"the",
-			"a",
-			"an",
-			"and",
-			"or",
-			"but",
-			"in",
-			"on",
-			"at",
-			"to",
-			"for",
-			"of",
-			"with",
-			"by",
-			"is",
-			"are",
-			"was",
-			"were",
-			"be",
-			"been",
-			"have",
-			"has",
-			"had",
-			"do",
-			"does",
-			"did",
-			"will",
-			"would",
-			"should",
-			"could",
-			"can",
-			"may",
-			"might",
-			"must",
-			"shall",
-			"this",
-			"that",
-			"these",
-			"those",
-			"i",
-			"you",
-			"he",
-			"she",
-			"it",
-			"we",
-			"they",
-			"me",
-			"him",
-			"her",
-			"us",
-			"them",
-			"my",
-			"your",
-			"his",
-			"her",
-			"its",
-			"our",
-			"their",
+			"the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by",
+			"is", "are", "was", "were", "be", "been", "have", "has", "had", "do", "does", "did",
+			"will", "would", "should", "could", "can", "may", "might", "must", "shall",
+			"this", "that", "these", "those", "i", "you", "he", "she", "it", "we", "they",
+			"me", "him", "her", "us", "them", "my", "your", "his", "her", "its", "our", "their"
 		];
 
 		return cleanText
@@ -252,7 +207,21 @@ const TagSuggestion: React.FC<TagSuggestionProps> = ({
 				)}
 
 				{/* Suggested Tags */}
-				{suggestedTags.length > 0 && (
+				{isLoadingSuggestions && (
+					<div className="mb-3">
+						<p className="text-sm text-muted-foreground mb-2">Loading suggestions...</p>
+						<div className="flex space-x-2">
+							{[...Array(3)].map((_, i) => (
+								<div
+									key={i}
+									className="h-6 w-16 bg-gray-800 rounded animate-pulse"
+								/>
+							))}
+						</div>
+					</div>
+				)}
+
+				{!isLoadingSuggestions && suggestedTags.length > 0 && (
 					<div>
 						<p className="text-sm text-muted-foreground mb-2">
 							Suggested tags:
