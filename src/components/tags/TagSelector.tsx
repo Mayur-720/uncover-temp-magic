@@ -29,6 +29,19 @@ const TagSelector: React.FC<TagSelectorProps> = ({
         setAvailableTags(response.tags);
       } catch (error) {
         console.error("Error fetching tags:", error);
+        // Set default predefined tags if API fails
+        setAvailableTags([
+          { _id: '1', name: 'confession', displayName: 'Confession', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '2', name: 'crush', displayName: 'Crush', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '3', name: 'secret', displayName: 'Secret', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '4', name: 'controversy', displayName: 'Controversy', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '5', name: 'rumor', displayName: 'Rumor', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '6', name: 'advice', displayName: 'Advice', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '7', name: 'vent', displayName: 'Vent', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '8', name: 'mentalhealth', displayName: 'MentalHealth', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '9', name: 'relationship', displayName: 'Relationship', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' },
+          { _id: '10', name: 'campuslife', displayName: 'CampusLife', postCount: 0, trendingScore: 0, isActive: true, createdAt: '', updatedAt: '' }
+        ]);
       } finally {
         setIsLoading(false);
       }
