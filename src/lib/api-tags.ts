@@ -7,7 +7,7 @@ export interface Tag {
   displayName: string;
   postCount: number;
   trendingScore: number;
-  category: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +27,16 @@ export interface TagPostsResponse {
   hasMore: boolean;
   tag: string;
 }
+
+export interface AllTagsResponse {
+  tags: Tag[];
+}
+
+// Get all available tags
+export const getAllTags = async (): Promise<AllTagsResponse> => {
+  const response = await api.get('/api/tags');
+  return response.data;
+};
 
 // Get trending tags
 export const getTrendingTags = async (params: {

@@ -3,9 +3,13 @@ const express = require("express");
 const router = express.Router();
 const {
   getTrendingTags,
+  getAllTags,
   searchTags,
   getPostsByTag
 } = require("../controllers/tagController");
+
+// @desc Get all available tags
+router.get("/", getAllTags);
 
 // @desc Get trending tags
 router.get("/trending", getTrendingTags);

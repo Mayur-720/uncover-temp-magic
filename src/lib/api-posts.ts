@@ -44,6 +44,7 @@ export const createPost = async (postData: {
   feedType?: "global" | "college" | "area";
   college?: string;
   area?: string;
+  tags?: string[];
   ghostCircleId?: string;
 }): Promise<Post> => {
   console.log("Creating post with data:", postData);

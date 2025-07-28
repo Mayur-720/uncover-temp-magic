@@ -28,10 +28,9 @@ const tagSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  category: {
-    type: String,
-    enum: ['confession', 'crush', 'controversy', 'government', 'danger', 'lifestyle', 'work', 'relationship', 'other'],
-    default: 'other'
+  isActive: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true
@@ -41,5 +40,39 @@ const tagSchema = new mongoose.Schema({
 tagSchema.index({ trendingScore: -1 });
 tagSchema.index({ postCount: -1 });
 tagSchema.index({ name: 1 });
+
+// Predefined tags
+const PREDEFINED_TAGS = [
+  { name: 'confession', displayName: 'Confession' },
+  { name: 'crush', displayName: 'Crush' },
+  { name: 'secret', displayName: 'Secret' },
+  { name: 'controversy', displayName: 'Controversy' },
+  { name: 'rumor', displayName: 'Rumor' },
+  { name: 'advice', displayName: 'Advice' },
+  { name: 'vent', displayName: 'Vent' },
+  { name: 'mentalhealth', displayName: 'MentalHealth' },
+  { name: 'relationship', displayName: 'Relationship' },
+  { name: 'campuslife', displayName: 'CampusLife' }
+];
+
+// Initialize predefined tags
+tagSchema.statics.initializePredefinedTags = async function() {
+  try {
+    for (const tag of PREDEFINED_TAGS) {
+      await this.findOneAndUpdate(
+        { name: tag.name },
+        { 
+          name: tag.name, 
+          displayName: tag.displayName,
+          isActive: true
+        },
+        { upsert: true, new: true }
+      );
+    }
+    console.log('Predefined tags initialized');
+  } catch (error) {
+    console.error('Error initializing predefined tags:', error);
+  }
+};
 
 module.exports = mongoose.model('Tag', tagSchema);

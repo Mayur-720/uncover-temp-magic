@@ -46,21 +46,6 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      confession: "bg-red-500/20 text-red-400 border-red-500/30",
-      crush: "bg-pink-500/20 text-pink-400 border-pink-500/30",
-      controversy: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-      government: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      danger: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-      lifestyle: "bg-green-500/20 text-green-400 border-green-500/30",
-      work: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-      relationship: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-      other: "bg-gray-500/20 text-gray-400 border-gray-500/30"
-    };
-    return colors[category] || colors.other;
-  };
-
   if (isLoading) {
     return (
       <div className={cn("flex items-center space-x-2", className)}>
@@ -69,7 +54,7 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
           {[...Array(limit)].map((_, i) => (
             <div
               key={i}
-              className="h-8 w-20 bg-gray-800 rounded-full animate-pulse"
+              className="h-8 w-20 bg-muted rounded-full animate-pulse"
             />
           ))}
         </div>
@@ -85,7 +70,7 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
     <div className={cn("flex items-center space-x-3", className)}>
       <div className="flex items-center space-x-2">
         <TrendingUp className="h-4 w-4 text-purple-500" />
-        <span className="text-sm font-medium text-gray-300">Trending:</span>
+        <span className="text-sm font-medium text-muted-foreground">Trending:</span>
       </div>
       
       <div className="flex flex-wrap items-center gap-2">
@@ -97,8 +82,8 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
             onClick={() => handleTagClick(tag)}
             className={cn(
               "h-8 px-3 rounded-full border transition-all duration-200 hover:scale-105",
-              getCategoryColor(tag.category),
-              "hover:shadow-lg hover:shadow-current/20"
+              "bg-purple-500/20 text-purple-400 border-purple-500/30",
+              "hover:shadow-lg hover:shadow-purple-500/20"
             )}
           >
             <Hash className="h-3 w-3 mr-1" />
