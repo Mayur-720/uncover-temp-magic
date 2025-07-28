@@ -1,139 +1,183 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
-import { getRecognitions, revokeRecognition } from '@/lib/api';
-import { toast } from '@/hooks/use-toast';
-import { Recognition, User } from '@/types/user';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import UserCard from '@/components/user/UserCard';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import React, { useState } from "react";
+import { Eye, Users, Star, Trophy, Award } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useQuery } from "@tanstack/react-query";
+import { getRecognitions } from "@/lib/api";
+import RecognitionModal from "@/components/recognition/RecognitionModal";
+import { toast } from "@/hooks/use-toast";
+import RecognitionStats from "@/components/recognition/RecognitionStats";
 
 const RecognitionsPage = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('recognized');
-  const [filter, setFilter] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data, isLoading, refetch } = useQuery<Recognition>({
-    queryKey: ['recognitions', activeTab, filter],
-    queryFn: () => getRecognitions(activeTab, filter),
+  const {
+    data: recognitionData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["recognitions"],
+    queryFn: () => getRecognitions(),
   });
 
-  const handleRevokeRecognition = async (userId: string) => {
-    if (!window.confirm('Are you sure you want to revoke this recognition? This cannot be undone.')) {
-      return;
-    }
+  if (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to load recognition data",
+    });
+  }
 
-    try {
-      await revokeRecognition(userId);
-      toast({
-        title: 'Recognition revoked',
-        description: 'The recognition has been successfully revoked.',
-      });
-      refetch();
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message || 'Failed to revoke recognition',
-      });
-    }
-  };
-
-  const renderUserList = (users: User[] = []) => {
-    if (users.length === 0) {
-      return (
-        <div className="text-center py-10">
-          <p className="text-muted-foreground">No users found</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid gap-4 md:grid-cols-2">
-        {users.map((user) => (
-          <UserCard key={user._id} user={user} onRecognitionSuccess={refetch} />
-        ))}
-      </div>
-    );
-  };
+  // Fallbacks for stats
+  const stats = recognitionData?.stats || {};
+  const totalRecognized = stats.totalRecognized ?? 0;
+  const totalRecognizers = stats.totalRecognizers ?? 0;
+  const recognitionRate = stats.recognitionRate ?? 0;
+  const successfulRecognitions = stats.successfulRecognitions ?? 0;
+  const recognitionAttempts = stats.recognitionAttempts ?? 0;
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)} 
-          className="mr-2"
-        >
-          <ArrowLeft size={16} />
-        </Button>
-        <h1 className="text-2xl font-bold">Recognitions</h1>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Recognition Center</h1>
+        <p className="text-muted-foreground">
+          Track your identity recognition achievements and see who's figured out who you are!
+        </p>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-10">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="border p-4 rounded-lg text-center">
-              <p className="text-2xl font-bold">{data?.stats.totalRecognized || 0}</p>
-              <p className="text-sm text-muted-foreground">You Recognized</p>
-            </div>
-            <div className="border p-4 rounded-lg text-center">
-              <p className="text-2xl font-bold">{data?.stats.totalRecognizers || 0}</p>
-              <p className="text-sm text-muted-foreground">Recognized You</p>
-            </div>
-            <div className="border p-4 rounded-lg text-center">
-              <p className="text-2xl font-bold">{data?.stats.recognitionRate || 0}%</p>
-              <p className="text-sm text-muted-foreground">Recognition Rate</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                ({data?.stats.successfulRecognitions || 0}/{data?.stats.recognitionAttempts || 0})
+      <div className="grid gap-6">
+        {/* Main Stats Cards */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <Card className="border-blue-200 bg-blue-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Eye className="h-5 w-5 text-blue-600" />
+                People I've Recognized
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-600">{totalRecognized}</div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Identities successfully revealed
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="flex justify-end mb-4">
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="mutual">Mutual Only</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Card className="border-green-200 bg-green-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Users className="h-5 w-5 text-green-600" />
+                People Who Recognized Me
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-600">{totalRecognizers}</div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Times my identity was revealed
+              </p>
+            </CardContent>
+          </Card>
 
-          <Tabs defaultValue="recognized" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="recognized">I've Recognized</TabsTrigger>
-              <TabsTrigger value="recognizers">Recognized Me</TabsTrigger>
-            </TabsList>
-            <TabsContent value="recognized">
-              {renderUserList(data?.recognized as User[])}
-            </TabsContent>
-            <TabsContent value="recognizers">
-              {renderUserList(data?.recognizers as User[])}
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
+          <Card className="border-purple-200 bg-purple-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-purple-600" />
+                Recognition Rate
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-purple-600">{recognitionRate}%</div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Success rate of your guesses
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recognition Stats Component */}
+        <RecognitionStats
+          totalRecognized={totalRecognized}
+          totalRecognizers={totalRecognizers}
+          recognitionRate={recognitionRate}
+          successfulRecognitions={successfulRecognitions}
+          recognitionAttempts={recognitionAttempts}
+        />
+
+        {/* Action Cards */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card className="border-orange-200 bg-orange-50/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-orange-600" />
+                Achievement Unlocked
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {totalRecognized >= 5 && (
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                    🕵️ Detective - Recognized 5+ people
+                  </Badge>
+                )}
+                {totalRecognizers >= 5 && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    🎭 Famous - Recognized by 5+ people
+                  </Badge>
+                )}
+                {recognitionRate >= 80 && recognitionAttempts >= 5 && (
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                    🎯 Sharpshooter - 80%+ accuracy
+                  </Badge>
+                )}
+                {totalRecognized === 0 && totalRecognizers === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Start recognizing people to unlock achievements!
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5 text-blue-600" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Loading..." : "View Detailed Summary"}
+                </Button>
+                <Button
+                  onClick={() => refetch()}
+                  variant="outline"
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  Refresh Data
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <RecognitionModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 };

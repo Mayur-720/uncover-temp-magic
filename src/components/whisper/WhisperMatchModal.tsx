@@ -17,7 +17,7 @@ export default function WhisperMatchModal({ open, onOpenChange }: Props) {
 
   const { mutate: join, isPending: isJoining } = useMutation({
     mutationFn: joinWhisperMatch,
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       if (data.status === "matched") setMatch(data.match);
       else setWaiting(true);
     },
@@ -79,7 +79,10 @@ export default function WhisperMatchModal({ open, onOpenChange }: Props) {
               ))}
             </div>
             <form
-              onSubmit={e => {e.preventDefault(); send({ matchId: match._id, content: msg });}}
+              onSubmit={e => {
+                e.preventDefault(); 
+                send({ matchId: match._id, content: msg });
+              }}
               className="flex gap-2"
             >
               <Textarea value={msg} onChange={e => setMsg(e.target.value)} rows={1} className="resize-none" />

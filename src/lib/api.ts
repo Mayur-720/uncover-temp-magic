@@ -212,8 +212,8 @@ export const joinWhisperMatch = async () => {
   return response.data;
 };
 
-export const sendWhisperMatchMessage = async (matchId: string, content: string) => {
-  const response = await api.post('/api/whisper-match/message', { matchId, content });
+export const sendWhisperMatchMessage = async (data: { matchId: string; content: string }) => {
+  const response = await api.post('/api/whisper-match/message', data);
   return response.data;
 };
 
