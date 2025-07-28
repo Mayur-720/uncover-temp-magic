@@ -38,11 +38,17 @@ import NotFound from "./pages/NotFound";
 // Layout
 import AppShell from "./components/layout/AppShell";
 import PostDetail from "./components/feed/PostDetail";
+import TagsPage from "./pages/TagsPage";
 
 const queryClient = new QueryClient();
 
 function GlobalApp() {
-	const { showLoginAnimation, setShowLoginAnimation, showOnboarding, setShowOnboarding } = useAuth();
+	const {
+		showLoginAnimation,
+		setShowLoginAnimation,
+		showOnboarding,
+		setShowOnboarding,
+	} = useAuth();
 	const [loginAnimNavPending, setLoginAnimNavPending] = useState(false);
 	const navigate = useNavigate();
 
@@ -63,10 +69,7 @@ function GlobalApp() {
 			)}
 
 			{/* Onboarding Modal */}
-			<OnboardingModal
-				open={showOnboarding}
-				onOpenChange={setShowOnboarding}
-			/>
+			<OnboardingModal open={showOnboarding} onOpenChange={setShowOnboarding} />
 
 			<Routes>
 				{/* Public routes */}
@@ -163,7 +166,22 @@ function GlobalApp() {
 						}
 					/>
 				</Route>
-
+				<Route
+					path="/tags"
+					element={
+						<AppShell>
+							<TagsPage />
+						</AppShell>
+					}
+				/>
+				<Route
+					path="/tags/:tagName"
+					element={
+						<ProtectedRoute>
+							<TagsPage />
+						</ProtectedRoute>
+					}
+				/>
 				{/* Admin routes */}
 				<Route
 					path="/admin"

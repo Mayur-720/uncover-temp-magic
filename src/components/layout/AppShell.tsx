@@ -178,6 +178,12 @@ const AppShell = ({ children }: AppShellProps) => {
 							onClick={() => handleNavigation("/")}
 						/>
 						<NavItem
+							icon={<Home size={18} />}
+							label="Trending"
+							active={currentTab === "Trending"}
+							onClick={() => handleNavigation("/tags")}
+						/>
+						<NavItem
 							icon={<Users size={18} />}
 							label="Ghost Circles"
 							active={currentTab === "Circles"}
