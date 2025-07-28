@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8900';
@@ -38,24 +37,24 @@ api.interceptors.response.use(
   }
 );
 
-// User authentication functions
+// User authentication functions - Fixed endpoints to match backend routes
 export const loginUser = async (email: string, password: string) => {
-  const response = await api.post('/api/auth/login', { email, password });
+  const response = await api.post('/api/users/login', { email, password });
   return response.data;
 };
 
 export const registerUser = async (username: string, fullName: string, email: string, password: string, referralCode?: string) => {
-  const response = await api.post('/api/auth/register', { username, fullName, email, password, referralCode });
+  const response = await api.post('/api/users/register', { username, fullName, email, password, referralCode });
   return response.data;
 };
 
 export const forgotPassword = async (email: string) => {
-  const response = await api.post('/api/auth/forgot-password', { email });
+  const response = await api.post('/api/users/forgot-password', { email });
   return response.data;
 };
 
 export const resetPassword = async (token: string, newPassword: string) => {
-  const response = await api.post('/api/auth/reset-password', { token, newPassword });
+  const response = await api.put(`/api/users/reset-password/${token}`, { newPassword });
   return response.data;
 };
 
