@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Ghost, Plus, Users, ArrowLeft } from "lucide-react";
@@ -111,7 +112,9 @@ const GhostCircles = () => {
 
   if (selectedCircleId) {
     // Find the selected circle to get its full object
-    const selectedCircle = ghostCircles.find(circle => circle._id === selectedCircleId);
+    const selectedCircle = Array.isArray(ghostCircles) 
+      ? ghostCircles.find(circle => circle._id === selectedCircleId)
+      : null;
 
     return (
       <motion.div
@@ -209,7 +212,7 @@ const GhostCircles = () => {
           </motion.div>
         </div>
 
-        {ghostCircles.length === 0 ? (
+        {!Array.isArray(ghostCircles) || ghostCircles.length === 0 ? (
           <motion.div variants={cardVariants}>
             <Card className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 shadow-lg">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">

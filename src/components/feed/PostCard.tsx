@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import {
@@ -257,7 +258,7 @@ const PostCard: React.FC<PostCardProps> = ({
 		}
 		try {
 			setIsSubmitting(true);
-			await addComment(post._id, newComment.trim(), user?.anonymousAlias || "Anonymous");
+			await addComment(post._id, newComment.trim());
 
 			setNewComment("");
 			loadComments();
