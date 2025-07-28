@@ -32,12 +32,12 @@ import TagsPage from "./pages/TagsPage";
 function App() {
   return (
     <QueryClient>
-      <AuthProvider>
-        <AdminProvider>
-          <SmoothScrollProvider>
-            <div className="min-h-screen bg-background">
-              <Toaster />
-              <Router>
+      <Router>
+        <AuthProvider>
+          <AdminProvider>
+            <SmoothScrollProvider>
+              <div className="min-h-screen bg-background">
+                <Toaster />
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
@@ -66,11 +66,11 @@ function App() {
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </Router>
-            </div>
-          </SmoothScrollProvider>
-        </AdminProvider>
-      </AuthProvider>
+              </div>
+            </SmoothScrollProvider>
+          </AdminProvider>
+        </AuthProvider>
+      </Router>
     </QueryClient>
   );
 }
