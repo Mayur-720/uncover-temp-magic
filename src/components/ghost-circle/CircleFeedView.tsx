@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -83,31 +84,27 @@ const CircleFeedView: React.FC<CircleFeedViewProps> = ({ circleId }) => {
         <div className="space-y-4">
           {posts.map((post: any) => {
             // Transform the post to match the Post interface
-            const transformedPost: Post = {
+            const transformedPost = {
               _id: post._id,
               user: typeof post.user === 'string' ? post.user : post.user?._id || post.userId || '',
               anonymousAlias: post.anonymousAlias || 'Anonymous',
               avatarEmoji: post.avatarEmoji || '🎭',
               content: post.content || '',
-              imageUrl: post.imageUrl,
               images: post.images || [],
               videos: post.videos || [],
               likes: post.likes || [],
               comments: post.comments || [],
               shareCount: post.shareCount || 0,
-              expiresAt: post.expiresAt || '',
-              createdAt: post.createdAt || '',
-              updatedAt: post.updatedAt || '',
-              ghostCircle: post.ghostCircle
+              createdAt: post.createdAt || new Date(),
+              tags: post.tags || []
             };
 
             return (
               <PostCard 
                 key={post._id} 
                 post={transformedPost} 
-                currentUserId={user?._id}
-                onRefresh={handleRefresh}
-                showOptions={true}
+                onUpdate={handleRefresh}
+                onDelete={handleRefresh}
               />
             );
           })}

@@ -126,16 +126,18 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 		navigate(`/tags/${tag.toLowerCase()}`);
 	};
 
-	const handleDeleteConfirm = () => {
+	const handleDeletePost = () => {
 		if (onDelete) {
 			onDelete(post._id);
 		}
+		setShowDeleteDialog(false);
 	};
 
-	const handleUpdatePost = (postId: string) => {
+	const handleUpdatePost = () => {
 		if (onUpdate) {
-			onUpdate(postId);
+			onUpdate(post._id);
 		}
+		setShowEditModal(false);
 	};
 
 	return (
@@ -269,14 +271,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 			<DeletePostDialog
 				open={showDeleteDialog}
 				onOpenChange={setShowDeleteDialog}
-				onConfirm={handleDeleteConfirm}
+				onDelete={handleDeletePost}
 			/>
 
 			<EditPostModal
 				open={showEditModal}
 				onOpenChange={setShowEditModal}
 				post={post}
-				onUpdate={handleUpdatePost}
+				onSuccess={handleUpdatePost}
 			/>
 
 			<PostDetail

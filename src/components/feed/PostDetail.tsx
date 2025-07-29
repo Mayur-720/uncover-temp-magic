@@ -37,7 +37,6 @@ const PostDetail: React.FC<{
             post={{ 
               ...post, 
               user: post.author?._id || '', 
-              username: post.author?.username || '',
               anonymousAlias: post.author?.anonymousAlias || 'Anonymous', 
               avatarEmoji: post.author?.avatarEmoji || '🎭', 
               comments: post.comments || [], 

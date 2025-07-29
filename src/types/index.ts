@@ -1,3 +1,4 @@
+
 export interface User {
   _id: string;
   username: string;
@@ -44,6 +45,7 @@ export interface Post {
   shareCount?: number;
   expiresAt: string;
   ghostCircle?: string;
+  tags: string[];
 }
 
 export interface GhostCircle {
