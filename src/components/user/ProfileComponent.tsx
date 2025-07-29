@@ -114,8 +114,23 @@ const ProfileComponent = ({
 		setSelectedPost(null);
 	};
 
-	const handlePostDeleted = () => {
-		refetch();
+	const handlePostDeleted = async () => {
+		if (selectedPost) {
+			try {
+				await deletePost(selectedPost._id);
+				refetch();
+				toast({
+					title: "Post deleted",
+					description: "Your post has been permanently deleted.",
+				});
+			} catch (error) {
+				toast({
+					variant: "destructive",
+					title: "Error deleting post",
+					description: "Could not delete your post. Please try again.",
+				});
+			}
+		}
 		setDeletePostDialogOpen(false);
 		setSelectedPost(null);
 	};
@@ -344,8 +359,7 @@ const ProfileComponent = ({
 					<DeletePostDialog
 						open={deletePostDialogOpen}
 						onOpenChange={setDeletePostDialogOpen}
-						postId={selectedPost._id}
-						onSuccess={handlePostDeleted}
+						onDelete={handlePostDeleted}
 					/>
 				</>
 			)}

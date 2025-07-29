@@ -46,9 +46,9 @@ const PostDetail: React.FC<{
                 createdAt: new Date()
               })) || [],
               createdAt: new Date(post.createdAt),
-              tags: post.tags || [],
+              tags: (post as any).tags || [],
               images: post.images || [],
-              videos: post.videos || [],
+              videos: post.videos?.map((video: any) => typeof video === 'string' ? video : video.url) || [],
               shareCount: post.shareCount || 0
             }} 
             onUpdate={() => {}} 
