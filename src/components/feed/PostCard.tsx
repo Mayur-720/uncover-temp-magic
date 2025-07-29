@@ -66,6 +66,7 @@ interface Post {
 	createdAt: string;
 	updatedAt: string;
 	shareCount?: number;
+  tags?: string[];
 }
 
 interface PostCardProps {
@@ -366,6 +367,10 @@ const PostCard: React.FC<PostCardProps> = ({
 		successfulRecognitions: 0,
 	};
 
+  const handleTagClick = (tagName: string) => {
+		navigate(`/tags/${tagName}`);
+	};
+
 	// Handle both old imageUrl and new images/videos arrays
 	const displayImages =
 		post.images && post.images.length > 0
@@ -446,6 +451,27 @@ const PostCard: React.FC<PostCardProps> = ({
 				{post.content && (
 					<div className="px-4 pb-3">
 						<p className="text-gray-200 leading-relaxed">{post.content}</p>
+					</div>
+				)}
+
+        {/* Tags */}
+				{post.tags && post.tags.length > 0 && (
+					<div className="px-4 pb-3">
+						<div className="flex flex-wrap gap-2">
+							{post.tags.map((tag, index) => (
+								<button
+									key={index}
+									onClick={(e) => {
+										e.stopPropagation();
+										handleTagClick(tag);
+									}}
+									className="inline-flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-full text-xs font-medium hover:bg-purple-500/30 transition-colors"
+								>
+									<Hash className="h-3 w-3" />
+									{tag.charAt(0).toUpperCase() + tag.slice(1)}
+								</button>
+							))}
+						</div>
 					</div>
 				)}
 
