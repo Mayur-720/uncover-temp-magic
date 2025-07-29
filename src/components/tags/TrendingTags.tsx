@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Hash } from "lucide-react";
+import { TrendingUp, Hash, ChevronRight } from "lucide-react";
 import { getTrendingTags, Tag } from "@/lib/api-tags";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -41,20 +41,28 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
     if (onTagClick) {
       onTagClick(tag.name);
     } else {
-      // Default behavior: navigate to tag posts
       navigate(`/tags/${tag.name}`);
     }
   };
 
+  const handleViewAll = () => {
+    navigate('/trending-tags');
+  };
+
   if (isLoading) {
     return (
-      <div className={cn("flex items-center space-x-2", className)}>
-        <TrendingUp className="h-4 w-4 text-purple-500" />
-        <div className="flex space-x-2">
+      <div className={cn("w-full", className)}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="h-4 w-4 text-purple-500" />
+            <span className="text-sm font-medium text-gray-400">Trending:</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
           {[...Array(limit)].map((_, i) => (
             <div
               key={i}
-              className="h-8 w-20 bg-muted rounded-full animate-pulse"
+              className="h-8 w-20 bg-gray-800 rounded-full animate-pulse"
             />
           ))}
         </div>
@@ -67,13 +75,24 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
   }
 
   return (
-    <div className={cn("flex items-center space-x-3", className)}>
-      <div className="flex items-center space-x-2">
-        <TrendingUp className="h-4 w-4 text-purple-500" />
-        <span className="text-sm font-medium text-muted-foreground">Trending:</span>
+    <div className={cn("w-full", className)}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-2">
+          <TrendingUp className="h-4 w-4 text-purple-500" />
+          <span className="text-sm font-medium text-gray-400">Trending:</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleViewAll}
+          className="text-xs text-purple-400 hover:text-purple-300 p-1 h-auto"
+        >
+          View all
+          <ChevronRight className="h-3 w-3 ml-1" />
+        </Button>
       </div>
       
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <Button
             key={tag._id}
@@ -83,12 +102,13 @@ const TrendingTags: React.FC<TrendingTagsProps> = ({
             className={cn(
               "h-8 px-3 rounded-full border transition-all duration-200 hover:scale-105",
               "bg-purple-500/20 text-purple-400 border-purple-500/30",
-              "hover:shadow-lg hover:shadow-purple-500/20"
+              "hover:bg-purple-500/30 hover:shadow-lg hover:shadow-purple-500/20",
+              "text-xs font-medium"
             )}
           >
             <Hash className="h-3 w-3 mr-1" />
-            <span className="font-medium">{tag.displayName}</span>
-            <span className="ml-1 text-xs opacity-75">
+            <span className="truncate max-w-[80px] sm:max-w-none">{tag.displayName}</span>
+            <span className="ml-1 text-xs opacity-75 hidden sm:inline">
               {tag.postCount > 999 ? '999+' : tag.postCount}
             </span>
           </Button>

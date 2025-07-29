@@ -1,43 +1,33 @@
-import React, { useState } from "react";
-import {
-	BrowserRouter as Router,
-	Routes,
-	Route,
-	Outlet,
-	useNavigate,
-} from "react-router-dom";
+
+import React, { useEffect } from "react";
+import { Routes, Route, BrowserRouter, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import { AdminProvider } from "./context/AdminContext";
-import { Toaster } from "./components/ui/toaster";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import SmoothScrollProvider from "./components/providers/SmoothScrollProvider";
-import LoginSuccessAnimation from "./components/animations/LoginSuccessAnimation";
-import OnboardingModal from "./components/onboarding/OnboardingModal";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsAndConditions from "./pages/TermsAndConditions";
+import { AuthProvider } from "./context/AuthContext";
+import { AdminProvider } from "./context/AdminContext";
 
-// Pages
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ResetPassword from "./pages/ResetPassword";
-import Index from "./pages/Index";
-import ProfilePage from "./pages/ProfilePage";
-import GhostCircles from "./pages/GhostCircles";
-import InvitePage from "./pages/InvitePage";
-import WhispersPage from "./pages/WhispersPage";
-import RecognitionsPage from "./pages/RecognitionsPage";
-import ReferralPage from "./pages/ReferralPage";
-import MatchesPage from "./pages/MatchesPage";
-import AdminLogin from "./pages/AdminLogin";
-import AdminPanel from "./pages/AdminPanel";
-import AdminMatchStats from "./pages/AdminMatchStats";
-import NotFound from "./pages/NotFound";
-
-// Layout
-import AppShell from "./components/layout/AppShell";
-import PostDetail from "./components/feed/PostDetail";
+import Index from "@/pages/Index";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import ProfilePage from "@/pages/ProfilePage";
+import RecognitionsPage from "@/pages/RecognitionsPage";
+import GhostCircles from "@/pages/GhostCircles";
+import ReferralPage from "@/pages/ReferralPage";
+import MatchesPage from "@/pages/MatchesPage";
+import WhispersPage from "@/pages/WhispersPage";
+import NotFound from "@/pages/NotFound";
+import AppShell from "@/components/layout/AppShell";
+import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
+import AdminPanel from "@/pages/AdminPanel";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminMatchStats from "@/pages/AdminMatchStats";
+import ResetPassword from "@/pages/ResetPassword";
+import VerifyEmail from "@/pages/VerifyEmail";
+import InvitePage from "@/pages/InvitePage";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsAndConditions from "@/pages/TermsAndConditions";
+import TagPostsPage from "./pages/TagPostsPage";
+import TrendingTagsPage from "./pages/TrendingTagsPage";
 
 const queryClient = new QueryClient();
 
@@ -68,7 +58,10 @@ function GlobalApp() {
 			)}
 
 			{/* Onboarding Modal */}
-			<OnboardingModal open={showOnboarding} onOpenChange={setShowOnboarding} />
+			<OnboardingModal
+				open={showOnboarding}
+				onOpenChange={setShowOnboarding}
+			/>
 
 			<Routes>
 				{/* Public routes */}
@@ -205,10 +198,10 @@ function App() {
 								<GlobalApp />
 							</div>
 						</AuthProvider>
-					</Router>
-				</AdminProvider>
+					</BrowserRouter>
+				</QueryClientProvider>
 			</SmoothScrollProvider>
-		</QueryClientProvider>
+		</AdminProvider>
 	);
 }
 
