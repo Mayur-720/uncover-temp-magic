@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Hash } from "lucide-react";
@@ -16,15 +17,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import AvatarGenerator from "../user/AvatarGenerator";
-import { ModernImageSlider } from "@/components/ui/modern-image-slider";
-import { ModernVideoPlayer } from "@/components/ui/modern-video-player";
-import { likePost, sharePost } from "@/lib/api-posts";
+import ModernImageSlider from "@/components/ui/modern-image-slider";
+import ModernVideoPlayer from "@/components/ui/modern-video-player";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import DeletePostDialog from "./DeletePostDialog";
 import EditPostModal from "./EditPostModal";
 import PostDetail from "./PostDetail";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface Like {
 	user: string;
@@ -55,7 +56,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 	const { user } = useAuth();
 	const navigate = useNavigate();
 	const [liked, setLiked] = useState(
-		post.likes?.some((like) => like.user === user?.id) || false
+		post.likes?.some((like) => like.user === user?._id) || false
 	);
 	const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
 	const [shareCount, setShareCount] = useState(post.shareCount || 0);
@@ -63,7 +64,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [showPostDetail, setShowPostDetail] = useState(false);
 
-	const isOwner = user?.id === post.user;
+	const isOwner = user?._id === post.user;
 
 	const handleLike = async () => {
 		if (!user) {
@@ -72,9 +73,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 		}
 
 		try {
-			const response = await likePost(post._id);
+			const token = localStorage.getItem("token");
+			const response = await axios.put(
+				`/api/posts/${post._id}/like`,
+				{},
+				{
+					headers: { Authorization: `Bearer ${token}` }
+				}
+			);
 			setLiked(!liked);
-			setLikeCount(response.likes.length);
+			setLikeCount(response.data.likes.length);
 		} catch (error) {
 			console.error("Error liking post:", error);
 			toast.error("Failed to like post");
@@ -99,7 +107,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 				toast.success("Link copied to clipboard!");
 			}
 			
-			await sharePost(post._id);
+			const token = localStorage.getItem("token");
+			await axios.post(
+				`/api/posts/${post._id}/share`,
+				{},
+				{
+					headers: { Authorization: `Bearer ${token}` }
+				}
+			);
 			setShareCount(prev => prev + 1);
 		} catch (error) {
 			console.error("Error sharing post:", error);
@@ -109,6 +124,18 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 
 	const handleTagClick = (tag: string) => {
 		navigate(`/tags/${tag.toLowerCase()}`);
+	};
+
+	const handleDeleteConfirm = () => {
+		if (onDelete) {
+			onDelete(post._id);
+		}
+	};
+
+	const handleUpdatePost = (postId: string) => {
+		if (onUpdate) {
+			onUpdate(postId);
+		}
 	};
 
 	return (
@@ -242,14 +269,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onUpdate, onDelete }) => {
 			<DeletePostDialog
 				open={showDeleteDialog}
 				onOpenChange={setShowDeleteDialog}
-				onConfirm={() => onDelete?.(post._id)}
+				onConfirm={handleDeleteConfirm}
 			/>
 
 			<EditPostModal
 				open={showEditModal}
 				onOpenChange={setShowEditModal}
 				post={post}
-				onUpdate={onUpdate}
+				onUpdate={handleUpdatePost}
 			/>
 
 			<PostDetail

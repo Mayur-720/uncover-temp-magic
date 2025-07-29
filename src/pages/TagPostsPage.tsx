@@ -40,6 +40,14 @@ const TagPostsPage: React.FC = () => {
     fetchPosts();
   };
 
+  const handlePostUpdate = (postId: string) => {
+    handleRefresh();
+  };
+
+  const handlePostDelete = (postId: string) => {
+    setPosts(prev => prev.filter(post => post._id !== postId));
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 text-white">
@@ -80,9 +88,8 @@ const TagPostsPage: React.FC = () => {
               <PostCard
                 key={post._id}
                 post={post}
-                currentUserId={user?._id}
-                onRefresh={handleRefresh}
-                showOptions={true}
+                onUpdate={handlePostUpdate}
+                onDelete={handlePostDelete}
               />
             ))
           ) : (
