@@ -1,9 +1,9 @@
 
-import React, { useEffect } from "react";
-import { Routes, Route, BrowserRouter, Outlet } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, BrowserRouter as Router, Outlet, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SmoothScrollProvider from "./components/providers/SmoothScrollProvider";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AdminProvider } from "./context/AdminContext";
 
 import Index from "@/pages/Index";
@@ -28,6 +28,11 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import TagPostsPage from "./pages/TagPostsPage";
 import TrendingTagsPage from "./pages/TrendingTagsPage";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PostDetail } from "@/components/feed/PostDetail";
+import { LoginSuccessAnimation } from "@/components/animations/LoginSuccessAnimation";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { Toaster } from "@/components/ui/toaster";
 
 const queryClient = new QueryClient();
 
@@ -198,10 +203,10 @@ function App() {
 								<GlobalApp />
 							</div>
 						</AuthProvider>
-					</BrowserRouter>
-				</QueryClientProvider>
+					</Router>
+				</AdminProvider>
 			</SmoothScrollProvider>
-		</AdminProvider>
+		</QueryClientProvider>
 	);
 }
 
