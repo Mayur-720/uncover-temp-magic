@@ -12,40 +12,29 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2, AlertTriangle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { deletePost } from "@/lib/api";
+import { toast } from "sonner";
+import axios from "axios";
 
 interface DeletePostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  postId: string;
-  onSuccess: () => void;
+  onDelete: () => void;
 }
 
 const DeletePostDialog: React.FC<DeletePostDialogProps> = ({
   open,
   onOpenChange,
-  postId,
-  onSuccess,
+  onDelete,
 }) => {
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deletePost(postId);
-      toast({
-        title: "Post deleted",
-        description: "Your post has been permanently deleted.",
-      });
-      onSuccess();
-      onOpenChange(false);
+      onDelete();
+      toast.success("Post deleted successfully");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error deleting post",
-        description: "Could not delete your post. Please try again.",
-      });
+      toast.error("Failed to delete post");
     } finally {
       setIsDeleting(false);
     }

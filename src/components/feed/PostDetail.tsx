@@ -46,9 +46,13 @@ const PostDetail: React.FC<{
                 createdAt: new Date()
               })) || [],
               createdAt: new Date(post.createdAt),
-              tags: post.tags || []
+              tags: post.tags || [],
+              images: post.images || [],
+              videos: post.videos || [],
+              shareCount: post.shareCount || 0
             }} 
             onUpdate={() => {}} 
+            onDelete={() => {}}
           />
         </div>
       </div>

@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route, BrowserRouter, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SmoothScrollProvider from "./components/providers/SmoothScrollProvider";
 import { AuthProvider } from "./context/AuthContext";
@@ -44,7 +44,7 @@ function App() {
 						<AuthProvider>
 							<div className="min-h-screen bg-gray-950 text-white">
 								<Routes>
-									<Route path="/" element={<AppShell />}>
+									<Route path="/" element={<AppShell><Outlet /></AppShell>}>
 										<Route index element={<Index />} />
 										<Route path="profile/:userId" element={<ProfilePage />} />
 										<Route path="profile" element={<ProfilePage />} />
