@@ -61,9 +61,9 @@ const getPaginatedPosts = asyncHandler(async (req, res) => {
 		ghostCircle: { $exists: false },
 		expiresAt: { $gt: new Date() },
 		college: { $exists: false },
-		area: { $exists: false }
+		area: { $exists: false },
 	};
-	
+
 	if (after) {
 		query._id = { $lt: after };
 	}
@@ -101,21 +101,27 @@ const getPaginatedPosts = asyncHandler(async (req, res) => {
 		// First get regular posts (non-seed posts)
 		const regularPosts = await Post.find({
 			...query,
-			isSeedPost: { $ne: true }
-		}).sort({ _id: -1 }).limit(limit).lean();
+			isSeedPost: { $ne: true },
+		})
+			.sort({ _id: -1 })
+			.limit(limit)
+			.lean();
 
 		console.log(`Found ${regularPosts.length} regular global posts`);
 
 		let posts = regularPosts;
-		
+
 		// If we don't have enough regular posts, add seed posts
 		if (regularPosts.length < limit) {
 			const seedPostsNeeded = limit - regularPosts.length;
 			const seedPosts = await Post.find({
 				...query,
-				isSeedPost: true
-			}).sort({ _id: -1 }).limit(seedPostsNeeded).lean();
-			
+				isSeedPost: true,
+			})
+				.sort({ _id: -1 })
+				.limit(seedPostsNeeded)
+				.lean();
+
 			console.log(`Adding ${seedPosts.length} seed posts to global feed`);
 			posts = [...regularPosts, ...seedPosts];
 		}
@@ -168,7 +174,7 @@ const getCollegeFeed = asyncHandler(async (req, res) => {
 	const query = {
 		ghostCircle: { $exists: false },
 		expiresAt: { $gt: new Date() },
-		college: college
+		college: college,
 	};
 
 	if (after) {
@@ -178,19 +184,22 @@ const getCollegeFeed = asyncHandler(async (req, res) => {
 	try {
 		const posts = await Post.find(query).sort({ _id: -1 }).limit(limit).lean();
 		const hasMore = posts.length === limit;
-		
+
 		console.log("College feed response:", {
 			college,
 			postsCount: posts.length,
 			hasMore,
 		});
-		
+
 		res.status(200).json({ posts, hasMore });
 	} catch (error) {
 		console.error("College feed error:", error);
 		res.status(500).json({
 			message: "Failed to fetch college posts",
-			error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
+			error:
+				process.env.NODE_ENV === "development"
+					? error.message
+					: "Internal server error",
 		});
 	}
 });
@@ -211,7 +220,7 @@ const getAreaFeed = asyncHandler(async (req, res) => {
 	const query = {
 		ghostCircle: { $exists: false },
 		expiresAt: { $gt: new Date() },
-		area: area
+		area: area,
 	};
 
 	if (after) {
@@ -221,19 +230,22 @@ const getAreaFeed = asyncHandler(async (req, res) => {
 	try {
 		const posts = await Post.find(query).sort({ _id: -1 }).limit(limit).lean();
 		const hasMore = posts.length === limit;
-		
+
 		console.log("Area feed response:", {
 			area,
 			postsCount: posts.length,
 			hasMore,
 		});
-		
+
 		res.status(200).json({ posts, hasMore });
 	} catch (error) {
 		console.error("Area feed error:", error);
 		res.status(500).json({
 			message: "Failed to fetch area posts",
-			error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
+			error:
+				process.env.NODE_ENV === "development"
+					? error.message
+					: "Internal server error",
 		});
 	}
 });
@@ -242,7 +254,17 @@ const getAreaFeed = asyncHandler(async (req, res) => {
 // @route   POST /api/posts
 // @access  Private
 const createPost = asyncHandler(async (req, res) => {
-	const { content, ghostCircleId, imageUrl, images, videos, expiresIn, feedType, college, area } = req.body;
+	const {
+		content,
+		ghostCircleId,
+		imageUrl,
+		images,
+		videos,
+		expiresIn,
+		feedType,
+		college,
+		area,
+	} = req.body;
 
 	// Check if content, image, or video is provided
 	if (
@@ -272,8 +294,10 @@ const createPost = asyncHandler(async (req, res) => {
 	};
 
 	// Add college/area based on feedType and values from request
-	console.log(`Creating post for feedType: ${feedType}, college from request: ${college}, area from request: ${area}`);
-	
+	console.log(
+		`Creating post for feedType: ${feedType}, college from request: ${college}, area from request: ${area}`
+	);
+
 	if (feedType === "college" && college) {
 		postData.college = college;
 		console.log(`Post will be created for college: ${college}`);
@@ -318,7 +342,7 @@ const createPost = asyncHandler(async (req, res) => {
 			id: post._id,
 			feedType,
 			college: post.college,
-			area: post.area
+			area: post.area,
 		});
 
 		// Add post ID to the user's posts array
@@ -1006,9 +1030,9 @@ const sharePost = asyncHandler(async (req, res) => {
 	// Invalidate related caches
 	await invalidatePostCaches(postId, post.ghostCircle);
 
-	res.status(200).json({ 
+	res.status(200).json({
 		message: "Post shared successfully",
-		shareCount: updatedPost.shareCount 
+		shareCount: updatedPost.shareCount,
 	});
 });
 
@@ -1080,17 +1104,14 @@ const updateReply = asyncHandler(async (req, res) => {
 				_id: postId,
 				"comments._id": commentId,
 				"comments.replies._id": replyId,
-				"comments.replies.user": req.user._id
+				"comments.replies.user": req.user._id,
 			},
 			{
-				$set: { "comments.$[comment].replies.$[reply].content": content }
+				$set: { "comments.$[comment].replies.$[reply].content": content },
 			},
 			{
-				arrayFilters: [
-					{ "comment._id": commentId },
-					{ "reply._id": replyId }
-				],
-				new: true
+				arrayFilters: [{ "comment._id": commentId }, { "reply._id": replyId }],
+				new: true,
 			}
 		);
 

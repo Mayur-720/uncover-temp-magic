@@ -42,7 +42,12 @@ import PostDetail from "./components/feed/PostDetail";
 const queryClient = new QueryClient();
 
 function GlobalApp() {
-	const { showLoginAnimation, setShowLoginAnimation, showOnboarding, setShowOnboarding } = useAuth();
+	const {
+		showLoginAnimation,
+		setShowLoginAnimation,
+		showOnboarding,
+		setShowOnboarding,
+	} = useAuth();
 	const [loginAnimNavPending, setLoginAnimNavPending] = useState(false);
 	const navigate = useNavigate();
 
@@ -63,10 +68,7 @@ function GlobalApp() {
 			)}
 
 			{/* Onboarding Modal */}
-			<OnboardingModal
-				open={showOnboarding}
-				onOpenChange={setShowOnboarding}
-			/>
+			<OnboardingModal open={showOnboarding} onOpenChange={setShowOnboarding} />
 
 			<Routes>
 				{/* Public routes */}

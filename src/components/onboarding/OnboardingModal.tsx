@@ -1,6 +1,10 @@
-
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 import { updateUserProfile } from "@/lib/api";
 import OnboardingStep1 from "./OnboardingStep1";
@@ -12,176 +16,161 @@ import OnboardingStep6 from "./OnboardingStep6";
 import StepIndicator from "./StepIndicator";
 
 interface OnboardingModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
 }
 
 export interface OnboardingData {
-  college?: string;
-  area?: string;
-  interests?: string[];
+	college?: string;
+	area?: string;
+	interests?: string[];
 }
 
-const OnboardingModal: React.FC<OnboardingModalProps> = ({ open, onOpenChange }) => {
-  const { user, updateUser } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
-  const [isLoading, setIsLoading] = useState(false);
+const OnboardingModal: React.FC<OnboardingModalProps> = ({
+	open,
+	onOpenChange,
+}) => {
+	const { user, updateUser } = useAuth();
+	const [currentStep, setCurrentStep] = useState(1);
+	const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+	const [isLoading, setIsLoading] = useState(false);
 
-  const totalSteps = 6;
+	const totalSteps = 6;
 
-  // Reset to first step when modal opens
-  useEffect(() => {
-    if (open) {
-      console.log("Onboarding modal opened, resetting state");
-      setCurrentStep(1);
-      setOnboardingData({});
-    }
-  }, [open]);
+	// Reset to first step when modal opens
+	useEffect(() => {
+		if (open) {
+			setCurrentStep(1);
+			setOnboardingData({});
+		}
+	}, [open]);
 
-  // Don't render if user has already completed onboarding
-  useEffect(() => {
-    if (user?.onboardingComplete === true) {
-      console.log("User has completed onboarding, closing modal");
-      onOpenChange(false);
-    }
-  }, [user?.onboardingComplete, onOpenChange]);
+	// Don't render if user has already completed onboarding
+	useEffect(() => {
+		if (user?.onboardingComplete === true) {
+			onOpenChange(false);
+		}
+	}, [user?.onboardingComplete, onOpenChange]);
 
-  const handleNext = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      completeOnboarding();
-    }
-  };
+	const handleNext = () => {
+		if (currentStep < totalSteps) {
+			setCurrentStep(currentStep + 1);
+		} else {
+			completeOnboarding();
+		}
+	};
 
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+	const handleBack = () => {
+		if (currentStep > 1) {
+			setCurrentStep(currentStep - 1);
+		}
+	};
 
-  const handleSkip = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      completeOnboarding();
-    }
-  };
+	const handleSkip = () => {
+		if (currentStep < totalSteps) {
+			setCurrentStep(currentStep + 1);
+		} else {
+			completeOnboarding();
+		}
+	};
 
-  const completeOnboarding = async () => {
-    setIsLoading(true);
-    try {
-      console.log("Completing onboarding with data:", onboardingData);
-      
-      if (!user) {
-        console.error("No user found when completing onboarding");
-        return;
-      }
+	const completeOnboarding = async () => {
+		setIsLoading(true);
+		try {
+			if (!user) {
+				console.error("No user found when completing onboarding");
+				return;
+			}
 
-      // Update via API first
-      const apiResponse = await updateUserProfile({
-        ...onboardingData,
-        onboardingComplete: true,
-      });
-      
-      console.log("API response:", apiResponse);
-      
-      // Prepare the complete user data with onboarding flag set to true
-      const updatedUserData = {
-        ...user,
-        ...onboardingData,
-        ...apiResponse,
-        onboardingComplete: true, // Explicitly set to true
-      };
-      
-      console.log("Final user data being set:", updatedUserData);
-      
-      // Update local state
-      updateUser(updatedUserData);
-      
-      // Close modal
-      onOpenChange(false);
+			// Update via API first
+			const apiResponse = await updateUserProfile({
+				...onboardingData,
+				onboardingComplete: true,
+			});
 
-      // Reset state
-      setCurrentStep(1);
-      setOnboardingData({});
-      
-      console.log("Onboarding completed successfully - modal closed");
-      
-    } catch (error) {
-      console.error("Failed to complete onboarding:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+			// Prepare the complete user data with onboarding flag set to true
+			const updatedUserData = {
+				...user,
+				...onboardingData,
+				...apiResponse,
+				onboardingComplete: true, // Explicitly set to true
+			};
 
-  const updateOnboardingData = (data: Partial<OnboardingData>) => {
-    console.log("Updating onboarding data:", data);
-    setOnboardingData(prev => ({ ...prev, ...data }));
-  };
+			// Update local state
+			updateUser(updatedUserData);
 
-  const renderStep = () => {
-    const stepProps = {
-      onNext: handleNext,
-      onBack: handleBack,
-      onSkip: handleSkip,
-      onboardingData,
-      updateOnboardingData,
-      isLoading,
-      currentStep,
-      totalSteps,
-    };
+			// Close modal
+			onOpenChange(false);
 
-    switch (currentStep) {
-      case 1:
-        return <OnboardingStep1 {...stepProps} />;
-      case 2:
-        return <OnboardingStep2 {...stepProps} />;
-      case 3:
-        return <OnboardingStep3 {...stepProps} />;
-      case 4:
-        return <OnboardingStep4 {...stepProps} />;
-      case 5:
-        return <OnboardingStep5 {...stepProps} />;
-      case 6:
-        return <OnboardingStep6 {...stepProps} />;
-      default:
-        return <OnboardingStep1 {...stepProps} />;
-    }
-  };
+			// Reset state
+			setCurrentStep(1);
+			setOnboardingData({});
+		} catch (error) {
+			console.error("Failed to complete onboarding:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-  // Don't render if user has already completed onboarding
-  if (user?.onboardingComplete === true) {
-    console.log("User has completed onboarding, not showing modal");
-    return null;
-  }
+	const updateOnboardingData = (data: Partial<OnboardingData>) => {
+		setOnboardingData((prev) => ({ ...prev, ...data }));
+	};
 
-  return (
-    <Dialog 
-      open={open} 
-      onOpenChange={onOpenChange}
-      modal={true}
-    >
-      <DialogContent 
-        className="max-w-4xl w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 border-purple-800/50 flex flex-col"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
-        <DialogTitle className="sr-only">Onboarding</DialogTitle>
-        <DialogDescription className="sr-only">Complete your profile setup</DialogDescription>
-        
-        <div className="flex flex-col h-full max-h-[95vh]">
-          <div className="flex-shrink-0">
-            <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
-          </div>
-          <div className="flex-1 overflow-y-auto min-h-0">
-            {renderStep()}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+	const renderStep = () => {
+		const stepProps = {
+			onNext: handleNext,
+			onBack: handleBack,
+			onSkip: handleSkip,
+			onboardingData,
+			updateOnboardingData,
+			isLoading,
+			currentStep,
+			totalSteps,
+		};
+
+		switch (currentStep) {
+			case 1:
+				return <OnboardingStep1 {...stepProps} />;
+			case 2:
+				return <OnboardingStep2 {...stepProps} />;
+			case 3:
+				return <OnboardingStep3 {...stepProps} />;
+			case 4:
+				return <OnboardingStep4 {...stepProps} />;
+			case 5:
+				return <OnboardingStep5 {...stepProps} />;
+			case 6:
+				return <OnboardingStep6 {...stepProps} />;
+			default:
+				return <OnboardingStep1 {...stepProps} />;
+		}
+	};
+
+	if (user?.onboardingComplete === true) {
+		return null;
+	}
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange} modal={true}>
+			<DialogContent
+				className="max-w-4xl w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 border-purple-800/50 flex flex-col"
+				onPointerDownOutside={(e) => e.preventDefault()}
+				onEscapeKeyDown={(e) => e.preventDefault()}
+			>
+				<DialogTitle className="sr-only">Onboarding</DialogTitle>
+				<DialogDescription className="sr-only">
+					Complete your profile setup
+				</DialogDescription>
+
+				<div className="flex flex-col h-full max-h-[95vh]">
+					<div className="flex-shrink-0">
+						<StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+					</div>
+					<div className="flex-1 overflow-y-auto min-h-0">{renderStep()}</div>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
 };
 
 export default OnboardingModal;

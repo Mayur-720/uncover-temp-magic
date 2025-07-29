@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { loginUser, registerUser } from "@/lib/api";
 import { User } from "@/types/user";
@@ -50,15 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			if (storedUser) {
 				try {
 					const parsedUser = JSON.parse(storedUser);
-					console.log("Loaded user from localStorage:", parsedUser);
 					setUser(parsedUser);
-					
-					// Check if user needs onboarding - only if not completed
-					if (parsedUser.onboardingComplete === false || parsedUser.onboardingComplete === undefined) {
-						console.log("User needs onboarding, will show modal");
-					} else {
-						console.log("User has completed onboarding, skipping modal");
-					}
 				} catch (error) {
 					console.error("Error parsing user from localStorage:", error);
 					setUser(null);
@@ -73,7 +64,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		setIsLoading(true);
 		try {
 			const data = await loginUser(email, password);
-			console.log("Login successful, received data:", data);
 
 			// Store the user data with onboarding status from API response
 			const userData = {
@@ -94,13 +84,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			setTimeout(() => {
 				setShowLoginAnimation(false);
 				// Only show onboarding if user hasn't completed it AND it's explicitly false
-				if (userData.onboardingComplete === false || userData.onboardingComplete === undefined) {
-					console.log("User hasn't completed onboarding, showing modal");
+				if (
+					userData.onboardingComplete === false ||
+					userData.onboardingComplete === undefined
+				) {
 					setTimeout(() => {
 						setShowOnboarding(true);
 					}, 300);
 				} else {
-					console.log("User has completed onboarding, skipping modal");
 					navigate("/");
 				}
 			}, 3000); // Animation duration
@@ -200,13 +191,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		console.log("Updating user data in AuthContext:", userData);
 
 		// Ensure the updated user data is properly set with onboardingComplete
-		const updatedUser = { 
+		const updatedUser = {
 			...userData,
-			onboardingComplete: userData.onboardingComplete === true ? true : false
+			onboardingComplete: userData.onboardingComplete === true ? true : false,
 		};
-		
+
 		console.log("Final updated user data:", updatedUser);
-		
+
 		setUser(updatedUser);
 		localStorage.setItem("user", JSON.stringify(updatedUser));
 
