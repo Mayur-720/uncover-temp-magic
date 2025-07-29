@@ -1,7 +1,8 @@
+
 import React, { useEffect } from "react";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { QueryClient } from "@tanstack/react-query";
-import { SmoothScrollProvider } from "./SmoothScrollProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import SmoothScrollProvider from "./components/providers/SmoothScrollProvider";
 import { AuthProvider } from "./context/AuthContext";
 import { AdminProvider } from "./context/AdminContext";
 
@@ -15,11 +16,11 @@ import ReferralPage from "@/pages/ReferralPage";
 import MatchesPage from "@/pages/MatchesPage";
 import WhispersPage from "@/pages/WhispersPage";
 import NotFound from "@/pages/NotFound";
-import AppShell from "@/components/AppShell";
+import AppShell from "@/components/layout/AppShell";
 import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
-import AdminPanel from "@/components/admin/AdminPanel";
-import AdminLogin from "@/components/admin/AdminLogin";
-import AdminMatchStats from "@/components/admin/AdminMatchStats";
+import AdminPanel from "@/pages/AdminPanel";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminMatchStats from "@/pages/AdminMatchStats";
 import ResetPassword from "@/pages/ResetPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
@@ -27,6 +28,8 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import TagPostsPage from "./pages/TagPostsPage";
 import TrendingTagsPage from "./pages/TrendingTagsPage";
+
+const queryClient = new QueryClient();
 
 function App() {
 	useEffect(() => {
@@ -36,7 +39,7 @@ function App() {
 	return (
 		<AdminProvider>
 			<SmoothScrollProvider>
-				<QueryClient>
+				<QueryClientProvider client={queryClient}>
 					<BrowserRouter>
 						<AuthProvider>
 							<div className="min-h-screen bg-gray-950 text-white">
@@ -83,7 +86,7 @@ function App() {
 							</div>
 						</AuthProvider>
 					</BrowserRouter>
-				</QueryClient>
+				</QueryClientProvider>
 			</SmoothScrollProvider>
 		</AdminProvider>
 	);
