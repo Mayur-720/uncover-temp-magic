@@ -26,79 +26,17 @@ const getPaginatedPosts = asyncHandler(async (req, res) => {
 
 	const query = {
 		expiresAt: { $gt: new Date() },
-		college: { $exists: false },
-		area: { $exists: false }
+		ghostCircle: { $exists: false },
 	};
 
 	if (after) {
 		query._id = { $lt: after };
 	}
 
-	// Try to get from cache when no pagination
-	if (!after && limit === 20 && redis.isAvailable()) {
-		try {
-			const cachedPosts = await redis.get(CACHE_KEYS.GLOBAL_FEED);
-			if (cachedPosts) {
-				try {
-					const parsedPosts =
-						typeof cachedPosts === "string"
-							? JSON.parse(cachedPosts)
-							: cachedPosts;
-					if (Array.isArray(parsedPosts) && parsedPosts.length >= 20) {
-						return res.status(200).json({
-							posts: parsedPosts,
-							hasMore: parsedPosts.length === limit,
-						});
-					} else {
-						console.warn("Cached posts insufficient, fetching fresh data");
-						await redis.del(CACHE_KEYS.GLOBAL_FEED);
-					}
-				} catch (error) {
-					console.error("Cache retrieval error:", error, "value:", cachedPosts);
-					await redis.del(CACHE_KEYS.GLOBAL_FEED);
-				}
-			}
-		} catch (error) {
-			console.error("Cache retrieval error:", error);
-		}
-	}
-
-	try {
-		// First get regular posts (non-seed posts)
-		const regularPosts = await Post.find({
-			...query,
-			isSeedPost: { $ne: true }
-		}).sort({ _id: -1 }).limit(limit).lean();
-
-		console.log(`Found ${regularPosts.length} regular global posts`);
-
-		let posts = regularPosts;
-		
-		// If we don't have enough regular posts, add seed posts
-		if (regularPosts.length < limit) {
-			const seedPostsNeeded = limit - regularPosts.length;
-			const seedPosts = await Post.find({
-				...query,
-				isSeedPost: true
-			}).sort({ _id: -1 }).limit(seedPostsNeeded).lean();
-			
-			console.log(`Adding ${seedPosts.length} seed posts to global feed`);
-			posts = [...regularPosts, ...seedPosts];
-		}
-
-		// Only cache first/default page
-		if (!after && limit === 20 && redis.isAvailable()) {
-			try {
-				await redis.del(CACHE_KEYS.GLOBAL_FEED);
-				await redis.setex(
-					CACHE_KEYS.GLOBAL_FEED,
-					CACHE_TTL.GLOBAL_FEED,
-					JSON.stringify(posts)
-				);
-			} catch (error) {
-				console.error("Cache storage error:", error);
-			}
-		}
+	const posts = await Post.find(query)
+		.sort({ _id: -1 })
+		.limit(limit)
+		.lean();
 
 	const hasMore = posts.length === limit;
 
@@ -121,31 +59,21 @@ const getCollegeFeed = asyncHandler(async (req, res) => {
 	const query = {
 		college: college,
 		expiresAt: { $gt: new Date() },
-		college: college
+		ghostCircle: { $exists: false },
 	};
 
 	if (after) {
 		query._id = { $lt: after };
 	}
 
-	try {
-		const posts = await Post.find(query).sort({ _id: -1 }).limit(limit).lean();
-		const hasMore = posts.length === limit;
-		
-		console.log("College feed response:", {
-			college,
-			postsCount: posts.length,
-			hasMore,
-		});
-		
-		res.status(200).json({ posts, hasMore });
-	} catch (error) {
-		console.error("College feed error:", error);
-		res.status(500).json({
-			message: "Failed to fetch college posts",
-			error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
-		});
-	}
+	const posts = await Post.find(query)
+		.sort({ _id: -1 })
+		.limit(limit)
+		.lean();
+
+	const hasMore = posts.length === limit;
+
+	res.status(200).json({ posts, hasMore });
 });
 
 // @desc    Get paginated posts for area feed
@@ -164,46 +92,61 @@ const getAreaFeed = asyncHandler(async (req, res) => {
 	const query = {
 		area: area,
 		expiresAt: { $gt: new Date() },
-		area: area
+		ghostCircle: { $exists: false },
 	};
 
 	if (after) {
 		query._id = { $lt: after };
 	}
 
-	try {
-		const posts = await Post.find(query).sort({ _id: -1 }).limit(limit).lean();
-		const hasMore = posts.length === limit;
-		
-		console.log("Area feed response:", {
-			area,
-			postsCount: posts.length,
-			hasMore,
+	const posts = await Post.find(query)
+		.sort({ _id: -1 })
+		.limit(limit)
+		.lean();
+
+	const hasMore = posts.length === limit;
+
+	res.status(200).json({ posts, hasMore });
+});
+
+// @desc    Get single post
+// @route   GET /api/posts/:id
+// @access  Public
+const getPost = asyncHandler(async (req, res) => {
+	const post = await Post.findById(req.params.id)
+		.populate("user", "username")
+		.populate({
+			path: "comments",
+			populate: {
+				path: "user",
+				select: "username",
+			},
 		});
-		
-		res.status(200).json({ posts, hasMore });
-	} catch (error) {
-		console.error("Area feed error:", error);
-		res.status(500).json({
-			message: "Failed to fetch area posts",
-			error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
-		});
+
+	if (!post) {
+		res.status(404);
+		throw new Error("Post not found");
 	}
+
+	res.status(200).json(post);
 });
 
 // @desc    Create post
 // @route   POST /api/posts
 // @access  Private
 const createPost = asyncHandler(async (req, res) => {
-	const { content, ghostCircleId, imageUrl, images, videos, expiresIn, feedType, college, area } = req.body;
+	const {
+		content,
+		images,
+		videos,
+		feedType,
+		college,
+		area,
+		tags,
+		ghostCircleId,
+	} = req.body;
 
-	// Check if content, image, or video is provided
-	if (
-		!content &&
-		!imageUrl &&
-		(!images || images.length === 0) &&
-		(!videos || videos.length === 0)
-	) {
+	if (!content && (!images || images.length === 0) && (!videos || videos.length === 0)) {
 		res.status(400);
 		throw new Error("Please add some content, image, or video");
 	}
@@ -219,19 +162,15 @@ const createPost = asyncHandler(async (req, res) => {
 	}
 
 	const postData = {
-		user: req.user._id,
-		content: content || "",
-		imageUrl: imageUrl || "",
-		images: images || [],
-		videos: videos || [],
-		anonymousAlias: req.user.anonymousAlias,
-		avatarEmoji: req.user.avatarEmoji,
-		expiresAt: expiryTime,
+		user: req.user.id,
+		anonymousAlias: user.anonymousAlias,
+		avatarEmoji: user.avatarEmoji,
+		content,
+		images,
+		videos,
+		expiresAt,
 	};
 
-	// Add college/area based on feedType and values from request
-	console.log(`Creating post for feedType: ${feedType}, college from request: ${college}, area from request: ${area}`);
-	
 	if (feedType === "college" && college) {
 		postData.college = college;
 	} else if (feedType === "area" && area) {
@@ -245,51 +184,15 @@ const createPost = asyncHandler(async (req, res) => {
 			throw new Error("Ghost Circle not found");
 		}
 		postData.ghostCircle = ghostCircleId;
+		expiresAt = ghostCircle.expiresAt;
+		postData.expiresAt = expiresAt;
 	}
 
-	// Use session for atomic operations
-	const session = await mongoose.startSession();
-
-	try {
-		session.startTransaction();
-
-		// Create the post
-		const [post] = await Post.create([postData], { session });
-
-		console.log(`Post created successfully:`, {
-			id: post._id,
-			feedType,
-			college: post.college,
-			area: post.area
-		});
-
-		// Add post ID to the user's posts array
-		await User.findByIdAndUpdate(
-			req.user._id,
-			{ $push: { posts: post._id } },
-			{ session }
-		);
-
-		// If posting to a ghost circle, add post to the circle's posts
-		if (ghostCircleId) {
-			await GhostCircle.findByIdAndUpdate(
-				ghostCircleId,
-				{ $push: { posts: post._id } },
-				{ session }
-			);
-		}
-
-		await session.commitTransaction();
-
-		// Invalidate related caches
-		await invalidatePostCaches(post._id, ghostCircleId);
-
-		res.status(201).json(post);
-	} catch (error) {
-		await session.abortTransaction();
-		throw error;
-	} finally {
-		session.endSession();
+	// Handle tags
+	let tagNames = [];
+	if (tags && Array.isArray(tags) && tags.length > 0) {
+		tagNames = tags.map(tag => tag.toLowerCase().trim());
+		postData.tags = tagNames;
 	}
 
 	// Handle hashtags
@@ -537,45 +440,34 @@ const replyToComment = asyncHandler(async (req, res) => {
 			throw new Error("Post not found");
 		}
 
-	// Cache the result
-	if (redis.isAvailable()) {
-		try {
-			await redis.setex(cacheKey, CACHE_TTL.POST_DETAIL, JSON.stringify(post));
-		} catch (error) {
-			console.error("Cache storage error:", error);
+		const comment = post.comments.id(commentId);
+		if (!comment) {
+			res.status(404);
+			throw new Error("Comment not found");
 		}
+
+		const newReply = {
+			_id: new mongoose.Types.ObjectId(),
+			user: req.user._id,
+			anonymousAlias: anonymousAlias || req.user.anonymousAlias,
+			avatarEmoji: req.user.avatarEmoji,
+			content,
+			createdAt: new Date(),
+			replies: []
+		};
+
+		comment.replies.push(newReply);
+		await post.save();
+
+		res.status(201).json({
+			message: "Reply added successfully",
+			reply: newReply
+		});
+	} catch (error) {
+		console.error("Reply to comment error:", error);
+		res.status(500);
+		throw new Error("Failed to add reply");
 	}
-
-	res.json(post);
-});
-
-// @desc    Share post
-// @route   POST /api/posts/:id/share
-// @access  Private
-const sharePost = asyncHandler(async (req, res) => {
-	const postId = req.params.id;
-
-	const post = await Post.findById(postId);
-
-	if (!post) {
-		res.status(404);
-		throw new Error("Post not found");
-	}
-
-	// Increment share count
-	const updatedPost = await Post.findByIdAndUpdate(
-		postId,
-		{ $inc: { shareCount: 1 } },
-		{ new: true }
-	);
-
-	// Invalidate related caches
-	await invalidatePostCaches(postId, post.ghostCircle);
-
-	res.status(200).json({ 
-		message: "Post shared successfully",
-		shareCount: updatedPost.shareCount 
-	});
 });
 
 // @desc    Delete reply
@@ -627,46 +519,28 @@ const updateReply = asyncHandler(async (req, res) => {
 		throw new Error("Post not found");
 	}
 
-	try {
-		const post = await Post.findOneAndUpdate(
-			{
-				_id: postId,
-				"comments._id": commentId,
-				"comments.replies._id": replyId,
-				"comments.replies.user": req.user._id
-			},
-			{
-				$set: { "comments.$[comment].replies.$[reply].content": content }
-			},
-			{
-				arrayFilters: [
-					{ "comment._id": commentId },
-					{ "reply._id": replyId }
-				],
-				new: true
-			}
-		);
-
-		if (!post) {
-			res.status(404);
-			throw new Error("Post, comment, reply not found, or not authorized");
-		}
-
-		// Find the updated reply
-		const comment = post.comments.id(commentId);
-		const updatedReply = comment.replies.id(replyId);
-
-		// Invalidate related caches
-		await invalidatePostCaches(postId, post.ghostCircle);
-
-		res.json({
-			message: "Reply updated successfully",
-			reply: updatedReply,
-		});
-	} catch (error) {
-		console.error("Update reply error:", error);
-		res.status(500).json({ message: "Server error" });
+	const comment = post.comments.id(commentId);
+	if (!comment) {
+		res.status(404);
+		throw new Error("Comment not found");
 	}
+
+	const reply = comment.replies.id(replyId);
+	if (!reply) {
+		res.status(404);
+		throw new Error("Reply not found");
+	}
+
+	// Check if user matches
+	if (reply.user.toString() !== req.user.id) {
+		res.status(401);
+		throw new Error("User not authorized");
+	}
+
+	reply.content = content;
+	await post.save();
+
+	res.status(200).json({ message: "Reply updated", reply });
 });
 
 module.exports = {

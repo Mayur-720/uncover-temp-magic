@@ -1,9 +1,9 @@
 
-import React, { useEffect, useState } from "react";
-import { Routes, Route, BrowserRouter as Router, Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Routes, Route, BrowserRouter, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SmoothScrollProvider from "./components/providers/SmoothScrollProvider";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import { AdminProvider } from "./context/AdminContext";
 
 import Index from "@/pages/Index";
@@ -28,185 +28,67 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import TagPostsPage from "./pages/TagPostsPage";
 import TrendingTagsPage from "./pages/TrendingTagsPage";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { PostDetail } from "@/components/feed/PostDetail";
-import { LoginSuccessAnimation } from "@/components/animations/LoginSuccessAnimation";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-import { Toaster } from "@/components/ui/toaster";
 
 const queryClient = new QueryClient();
 
-function GlobalApp() {
-	const {
-		showLoginAnimation,
-		setShowLoginAnimation,
-		showOnboarding,
-		setShowOnboarding,
-	} = useAuth();
-	const [loginAnimNavPending, setLoginAnimNavPending] = useState(false);
-	const navigate = useNavigate();
-
-	return (
-		<>
-			{/* Render animation overlay if login/registration success */}
-			{showLoginAnimation && (
-				<div className="fixed inset-0 z-[99] bg-black/70 flex items-center justify-center">
-					<LoginSuccessAnimation
-						onComplete={() => {
-							setShowLoginAnimation(false);
-							setLoginAnimNavPending(true);
-							// Use navigate for SPA transition
-							navigate("/");
-						}}
-					/>
-				</div>
-			)}
-
-			{/* Onboarding Modal */}
-			<OnboardingModal
-				open={showOnboarding}
-				onOpenChange={setShowOnboarding}
-			/>
-
-			<Routes>
-				{/* Public routes */}
-				<Route path="/post/:id" element={<PostDetail />} />
-				<Route path="/login" element={<Login />} />
-				<Route path="/register" element={<Register />} />
-				<Route path="/reset-password" element={<ResetPassword />} />
-				<Route path="/privacy-policy" element={<PrivacyPolicy />} />
-				<Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-				<Route path="/admin/login" element={<AdminLogin />} />
-
-				{/* Combined root route with public and protected sub-routes */}
-				<Route
-					path="/"
-					element={
-						<AppShell>
-							<Outlet />
-						</AppShell>
-					}
-				>
-					<Route index element={<Index />} /> {/* Public */}
-					<Route path="invite/:circleId" element={<InvitePage />} />{" "}
-					{/* Public */}
-					<Route
-						path="profile"
-						element={
-							<ProtectedRoute>
-								<ProfilePage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="profile/:userId"
-						element={
-							<ProtectedRoute>
-								<ProfilePage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="ghost-circles"
-						element={
-							<ProtectedRoute>
-								<GhostCircles />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="chat"
-						element={
-							<ProtectedRoute>
-								<WhispersPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="chat/:userId"
-						element={
-							<ProtectedRoute>
-								<WhispersPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="whispers"
-						element={
-							<ProtectedRoute>
-								<WhispersPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="recognitions"
-						element={
-							<ProtectedRoute>
-								<RecognitionsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="referrals"
-						element={
-							<ProtectedRoute>
-								<ReferralPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="matches"
-						element={
-							<ProtectedRoute>
-								<MatchesPage />
-							</ProtectedRoute>
-						}
-					/>
-				</Route>
-
-				{/* Admin routes */}
-				<Route
-					path="/admin"
-					element={
-						<ProtectedAdminRoute>
-							<AdminPanel />
-						</ProtectedAdminRoute>
-					}
-				/>
-				<Route
-					path="/admin/match-stats"
-					element={
-						<ProtectedAdminRoute>
-							<AdminMatchStats />
-						</ProtectedAdminRoute>
-					}
-				/>
-
-				{/* 404 route */}
-				<Route path="*" element={<NotFound />} />
-			</Routes>
-			<Toaster />
-		</>
-	);
-}
-
 function App() {
+	useEffect(() => {
+		document.documentElement.classList.add("dark");
+	}, []);
+
 	return (
-		<QueryClientProvider client={queryClient}>
+		<AdminProvider>
 			<SmoothScrollProvider>
-				<AdminProvider>
-					<Router
-						future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-					>
+				<QueryClientProvider client={queryClient}>
+					<BrowserRouter>
 						<AuthProvider>
-							<div className="App">
-								<GlobalApp />
+							<div className="min-h-screen bg-gray-950 text-white">
+								<Routes>
+									<Route path="/" element={<AppShell><Outlet /></AppShell>}>
+										<Route index element={<Index />} />
+										<Route path="profile/:userId" element={<ProfilePage />} />
+										<Route path="profile" element={<ProfilePage />} />
+										<Route path="recognitions" element={<RecognitionsPage />} />
+										<Route path="ghost-circles" element={<GhostCircles />} />
+										<Route path="referrals" element={<ReferralPage />} />
+										<Route path="matches" element={<MatchesPage />} />
+										<Route path="whispers" element={<WhispersPage />} />
+										<Route path="tags/:tagName" element={<TagPostsPage />} />
+										<Route path="trending-tags" element={<TrendingTagsPage />} />
+									</Route>
+									<Route path="/login" element={<Login />} />
+									<Route path="/register" element={<Register />} />
+									<Route path="/forgot-password" element={<Login />} />
+									<Route path="/reset-password" element={<ResetPassword />} />
+									<Route path="/verify-email" element={<VerifyEmail />} />
+									<Route path="/invite/:referralCode" element={<InvitePage />} />
+									<Route path="/privacy-policy" element={<PrivacyPolicy />} />
+									<Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+									<Route path="/admin" element={<AdminLogin />} />
+									<Route
+										path="/admin/dashboard"
+										element={
+											<ProtectedAdminRoute>
+												<AdminPanel />
+											</ProtectedAdminRoute>
+										}
+									/>
+									<Route
+										path="/admin/matches"
+										element={
+											<ProtectedAdminRoute>
+												<AdminMatchStats />
+											</ProtectedAdminRoute>
+										}
+									/>
+									<Route path="*" element={<NotFound />} />
+								</Routes>
 							</div>
 						</AuthProvider>
-					</Router>
-				</AdminProvider>
+					</BrowserRouter>
+				</QueryClientProvider>
 			</SmoothScrollProvider>
-		</QueryClientProvider>
+		</AdminProvider>
 	);
 }
 
