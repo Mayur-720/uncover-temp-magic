@@ -5,6 +5,7 @@ import { ArrowLeft, Hash, TrendingUp } from "lucide-react";
 import { getTrendingTags, Tag } from "@/lib/api-tags";
 
 const TrendingTagsPage: React.FC = () => {
+
 	const navigate = useNavigate();
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [isLoading, setIsLoading] = useState(true);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import PostCard from "@/components/feed/PostCard";
 import { useAuth } from "@/context/AuthContext";
 
 const TagPostsPage: React.FC = () => {
+
 	const { tagName } = useParams<{ tagName: string }>();
 	const navigate = useNavigate();
 	const { user } = useAuth();
@@ -106,6 +108,7 @@ const TagPostsPage: React.FC = () => {
 			</div>
 		</div>
 	);
+
 };
 
 export default TagPostsPage;

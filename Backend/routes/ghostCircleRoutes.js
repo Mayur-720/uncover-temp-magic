@@ -10,6 +10,7 @@ const {
 const { protect } = require("../middleware/authMiddleware");
 const { getGhostCirclePosts } = require("../controllers/postController");
 
+
 // Protected routes
 router
 	.route("/")

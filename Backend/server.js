@@ -24,6 +24,7 @@ const amaRoutes = require("./routes/amaRoutes");
 const TagRoutes = require("./routes/tagRoutes");
 const matchRoutes = require("./routes/matchRoutes");
 const adminMatchRoutes = require("./routes/adminMatchRoutes");
+const TagRoutes = require("./routes/tagRoutes");
 
 const app = express();
 const server = http.createServer(app);

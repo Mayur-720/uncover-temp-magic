@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +38,9 @@ const ReplyCommentModal = ({
       <DialogContent className="bg-gray-900 border-gray-700">
         <DialogHeader>
           <DialogTitle className="text-gray-100">Reply to Comment</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Write your reply to this comment
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <Textarea

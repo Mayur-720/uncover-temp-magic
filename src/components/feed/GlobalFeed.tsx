@@ -252,7 +252,10 @@ const GlobalFeed = () => {
 			</div>
 
 			<div className="max-w-2xl mx-auto px-4 py-6 pb-24 sm:pb-6">
-				<div className="mb-6 ">
+
+				{/* Trending Tags Section */}
+				<div className="mb-6 overflow-x-hidden w-full">
+
 					<TrendingTags
 						limit={5}
 						onTagClick={handleTagClick}
