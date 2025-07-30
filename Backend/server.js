@@ -21,6 +21,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const promptEventRoutes = require("./routes/promptEventRoutes");
 const whisperMatchRoutes = require("./routes/whisperMatchRoutes");
 const amaRoutes = require("./routes/amaRoutes");
+const TagRoutes = require("./routes/tagRoutes");
 const matchRoutes = require("./routes/matchRoutes");
 const adminMatchRoutes = require("./routes/adminMatchRoutes");
 
@@ -137,6 +138,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/prompts", promptEventRoutes);
 app.use("/api/whisper-match", whisperMatchRoutes);
 app.use("/api/ama", amaRoutes);
+app.use("/api/tags", TagRoutes);
 
 // ----- NEW ROUTES FOR MATCH FEATURES AND ADMIN -----
 app.use("/api/match", matchRoutes);
