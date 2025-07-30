@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,12 @@ import FeedSwitcher from "./FeedSwitcher";
 import CollegeSelectionDialog from "./CollegeSelectionDialog";
 import AreaSelectionDialog from "./AreaSelectionDialog";
 import TrendingTags from "@/components/tags/TrendingTags";
-import { getGlobalFeed, getCollegeFeed, getAreaFeed, updateUserProfile } from "@/lib/api-feed";
+import {
+	getGlobalFeed,
+	getCollegeFeed,
+	getAreaFeed,
+	updateUserProfile,
+} from "@/lib/api-feed";
 import WeeklyPromptBanner from "./WeeklyPrompt";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +44,7 @@ const GlobalFeed = () => {
 		const savedCollege = localStorage.getItem("userCollege");
 		const savedArea = localStorage.getItem("userArea");
 		const savedFeedType = localStorage.getItem("feedType") as FeedType;
-		
+
 		// Set college from profile first, then fallback to localStorage
 		if (profileCollege) {
 			setUserCollege(profileCollege);
@@ -48,7 +52,7 @@ const GlobalFeed = () => {
 		} else if (savedCollege) {
 			setUserCollege(savedCollege);
 		}
-		
+
 		// Set area from profile first, then fallback to localStorage
 		if (profileArea) {
 			setUserArea(profileArea);
@@ -56,7 +60,7 @@ const GlobalFeed = () => {
 		} else if (savedArea) {
 			setUserArea(savedArea);
 		}
-		
+
 		// Set feed type
 		if (savedFeedType) setFeedType(savedFeedType);
 	}, [user]);
@@ -96,7 +100,10 @@ const GlobalFeed = () => {
 		},
 		initialPageParam: null,
 		refetchInterval: 30000,
-		enabled: feedType === "global" || (feedType === "college" && !!userCollege) || (feedType === "area" && !!userArea),
+		enabled:
+			feedType === "global" ||
+			(feedType === "college" && !!userCollege) ||
+			(feedType === "area" && !!userArea),
 	});
 
 	const allPosts = data
@@ -137,7 +144,7 @@ const GlobalFeed = () => {
 			setShowAreaDialog(true);
 			return;
 		}
-		
+
 		// If user already has the required info, just switch the feed
 		setFeedType(newFeedType);
 		localStorage.setItem("feedType", newFeedType);
@@ -148,7 +155,7 @@ const GlobalFeed = () => {
 		localStorage.setItem("userCollege", college);
 		setFeedType("college");
 		localStorage.setItem("feedType", "college");
-		
+
 		// Update user profile
 		try {
 			await updateUserProfile({ college });
@@ -162,7 +169,7 @@ const GlobalFeed = () => {
 		localStorage.setItem("userArea", area);
 		setFeedType("area");
 		localStorage.setItem("feedType", "area");
-		
+
 		// Update user profile
 		try {
 			await updateUserProfile({ area });
@@ -245,10 +252,9 @@ const GlobalFeed = () => {
 			</div>
 
 			<div className="max-w-2xl mx-auto px-4 py-6 pb-24 sm:pb-6">
-				{/* Trending Tags Section */}
-				<div className="mb-6">
-					<TrendingTags 
-						limit={5} 
+				<div className="mb-6 ">
+					<TrendingTags
+						limit={5}
 						onTagClick={handleTagClick}
 						className="w-full"
 					/>
