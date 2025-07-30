@@ -4,7 +4,7 @@ const User = require("../models/userModel");
 const GhostCircle = require("../models/ghostCircleModel");
 const Tag = require("../models/tagModel");
 const { updateTagCounts } = require("./tagController");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // @desc    Get posts
 // @route   GET /api/posts
@@ -33,14 +33,70 @@ const getPaginatedPosts = asyncHandler(async (req, res) => {
 		query._id = { $lt: after };
 	}
 
-	const posts = await Post.find(query)
-		.sort({ _id: -1 })
-		.limit(limit)
-		.lean();
+	const posts = await Post.find(query).sort({ _id: -1 }).limit(limit).lean();
 
 	const hasMore = posts.length === limit;
 
 	res.status(200).json({ posts, hasMore });
+});
+
+// @desc    Get ghost circle posts
+// @route   GET /api/posts/circle/:id
+// @access  Private
+const getGhostCirclePosts = asyncHandler(async (req, res) => {
+	const redis = getRedisClient();
+	const cacheKey = CACHE_KEYS.GHOST_CIRCLE_POSTS(req.params.id);
+
+	// Try to get from cache first
+	if (redis.isAvailable()) {
+		try {
+			const cachedPosts = await redis.get(cacheKey);
+			if (cachedPosts) {
+				return res.json(JSON.parse(cachedPosts));
+			}
+		} catch (error) {
+			console.error("Cache retrieval error:", error);
+		}
+	}
+
+	// Check if user is member of the ghost circle
+	const ghostCircle = await GhostCircle.findById(req.params.id).lean();
+
+	if (!ghostCircle) {
+		res.status(404);
+		throw new Error("Ghost circle not found");
+	}
+
+	const isMember = ghostCircle.members.some(
+		(member) => member.userId.toString() === req.user._id.toString()
+	);
+
+	if (!isMember) {
+		res.status(403);
+		throw new Error("Not authorized to view posts in this ghost circle");
+	}
+
+	const posts = await Post.find({
+		ghostCircle: req.params.id,
+		expiresAt: { $gt: new Date() },
+	})
+		.sort({ createdAt: -1 })
+		.lean();
+
+	// Cache the result
+	if (redis.isAvailable()) {
+		try {
+			await redis.setex(
+				cacheKey,
+				CACHE_TTL.GHOST_CIRCLE_POSTS,
+				JSON.stringify(posts)
+			);
+		} catch (error) {
+			console.error("Cache storage error:", error);
+		}
+	}
+
+	res.json(posts);
 });
 
 // @desc    Get paginated posts for college feed
@@ -66,10 +122,7 @@ const getCollegeFeed = asyncHandler(async (req, res) => {
 		query._id = { $lt: after };
 	}
 
-	const posts = await Post.find(query)
-		.sort({ _id: -1 })
-		.limit(limit)
-		.lean();
+	const posts = await Post.find(query).sort({ _id: -1 }).limit(limit).lean();
 
 	const hasMore = posts.length === limit;
 
@@ -99,10 +152,7 @@ const getAreaFeed = asyncHandler(async (req, res) => {
 		query._id = { $lt: after };
 	}
 
-	const posts = await Post.find(query)
-		.sort({ _id: -1 })
-		.limit(limit)
-		.lean();
+	const posts = await Post.find(query).sort({ _id: -1 }).limit(limit).lean();
 
 	const hasMore = posts.length === limit;
 
@@ -146,7 +196,11 @@ const createPost = asyncHandler(async (req, res) => {
 		ghostCircleId,
 	} = req.body;
 
-	if (!content && (!images || images.length === 0) && (!videos || videos.length === 0)) {
+	if (
+		!content &&
+		(!images || images.length === 0) &&
+		(!videos || videos.length === 0)
+	) {
 		res.status(400);
 		throw new Error("Please add some content, image, or video");
 	}
@@ -191,7 +245,7 @@ const createPost = asyncHandler(async (req, res) => {
 	// Handle tags
 	let tagNames = [];
 	if (tags && Array.isArray(tags) && tags.length > 0) {
-		tagNames = tags.map(tag => tag.toLowerCase().trim());
+		tagNames = tags.map((tag) => tag.toLowerCase().trim());
 		postData.tags = tagNames;
 	}
 
@@ -453,7 +507,7 @@ const replyToComment = asyncHandler(async (req, res) => {
 			avatarEmoji: req.user.avatarEmoji,
 			content,
 			createdAt: new Date(),
-			replies: []
+			replies: [],
 		};
 
 		comment.replies.push(newReply);
@@ -461,7 +515,7 @@ const replyToComment = asyncHandler(async (req, res) => {
 
 		res.status(201).json({
 			message: "Reply added successfully",
-			reply: newReply
+			reply: newReply,
 		});
 	} catch (error) {
 		console.error("Reply to comment error:", error);
@@ -556,6 +610,7 @@ module.exports = {
 	deleteComment,
 	editComment,
 	replyToComment,
+	getGhostCirclePosts,
 	deleteReply,
 	updateReply,
 	getPaginatedPosts,
